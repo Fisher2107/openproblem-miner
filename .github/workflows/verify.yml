@@ -1,0 +1,56 @@
+name: verify
+
+# Independently re-verifies every committed result from a clean checkout, and checks that
+# the frozen verifier has not drifted. This is the repo's only claim to trustworthiness:
+# if a witness does not reproduce here, it is not a result.
+#
+# Uses `pull_request` (not pull_request_target) deliberately — fork PRs run with a
+# read-only token and no secrets, because this workflow executes checker commands
+# committed to the repo.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  reproduce:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install verification toolchain
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq z3 nauty
+          python -m pip install -q sympy mpmath networkx python-sat cvxpy scs numpy
+
+      - name: Install Lean (only if a T3 result claims one)
+        run: |
+          if ls mine/results/*/lean >/dev/null 2>&1; then
+            curl -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+              | sh -s -- -y --default-toolchain leanprover/lean4:stable
+            echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          else
+            echo "no lean/ directories present; skipping"
+          fi
+
+      - name: Check verifier freeze + reproduce all results
+        run: scripts/verify-results.sh
+
+      - name: Build Lean formalizations
+        run: |
+          shopt -s nullglob
+          for d in mine/results/*/lean/; do
+            echo "=== building $d"
+            ( cd "$d" && lake build ) || exit 1
+          done
