@@ -1,0 +1,8 @@
+{
+  "family": "ramsey",
+  "s": 3,
+  "t": 3,
+  "n": 6,
+  "graph6": "E~~w",
+  "note": "K6 has a triangle; checker must REJECT"
+}

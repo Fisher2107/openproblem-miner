@@ -1,0 +1,18 @@
+{
+  "family": "vdw",
+  "k": 3,
+  "r": 2,
+  "n": 8,
+  "colouring": [
+    0,
+    0,
+    1,
+    1,
+    0,
+    0,
+    1,
+    1
+  ],
+  "published_lower_bound": 8,
+  "note": "classical witness that W(3,2) > 8"
+}
