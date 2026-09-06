@@ -1,35 +1,41 @@
 {
-  "raw_entries": 1434,
+  "raw_entries": 1553,
   "per_cluster_raw": {
     "h1_erdos.jsonl": 578,
     "h2_formal.jsonl": 803,
-    "h5_graphinv.jsonl": 53
+    "h3_curated.jsonl": 70,
+    "h4_bounds.jsonl": 19,
+    "h5_graphinv.jsonl": 53,
+    "h6_literature.jsonl": 30
   },
-  "after_dedupe": 1422,
+  "after_dedupe": 1541,
   "duplicates_merged": 12,
   "by_class": {
-    "A": 102,
-    "C": 351,
+    "A": 147,
+    "C": 383,
     "B": 144,
-    "D": 825
+    "D": 867
   },
   "by_cluster": {
     "h1": 566,
     "h2": 803,
-    "h5": 53
+    "h4": 19,
+    "h5": 53,
+    "h3": 70,
+    "h6": 30
   },
   "tractability_hist": {
     "7": 8,
-    "6": 13,
-    "5": 41,
-    "4": 211,
-    "3": 146,
-    "2": 174,
-    "1": 605,
-    "0": 224
+    "6": 24,
+    "5": 49,
+    "4": 233,
+    "3": 163,
+    "2": 180,
+    "1": 627,
+    "0": 257
   },
-  "attack_eligible": 1366,
-  "excluded_solved_or_unverified": 56,
+  "attack_eligible": 1483,
+  "excluded_solved_or_unverified": 58,
   "top40": [
     {
       "id": "erdos-0835-a",
@@ -88,6 +94,27 @@
       "nl": "Context (Open questions regarding the existence of Euler bricks). Is there an Euler brick in $4$-dimensional space?\n\nDef"
     },
     {
+      "id": "bound-ramsey-R3333",
+      "class": "A",
+      "t": 6.5,
+      "src": "websearch",
+      "nl": "The 4-colour diagonal Ramsey number R(3,3,3,3) is the smallest n such that every 4-colouring of the edges of K_n contain"
+    },
+    {
+      "id": "bound-ramsey-R4-6",
+      "class": "A",
+      "t": 6.5,
+      "src": "clone:LinXueyuanStdio/AutoRamsey",
+      "nl": "The Ramsey number R(4,6) is the smallest n such that every 2-colouring of the edges of K_n contains a monochromatic K_4 "
+    },
+    {
+      "id": "bound-ramsey-R5-6",
+      "class": "A",
+      "t": 6.5,
+      "src": "clone:LinXueyuanStdio/AutoRamsey",
+      "nl": "The Ramsey number R(5,6) is the smallest n such that every 2-colouring of the edges of K_n contains a monochromatic K_5 "
+    },
+    {
       "id": "erdos-0023",
       "class": "A",
       "t": 6.5,
@@ -135,6 +162,62 @@
       "t": 6.5,
       "src": "Fajtlowicz's Graffiti (as reproduced in the TxGraffiti2 documentation)",
       "nl": "For every finite simple connected graph G, alpha(G) >= rad(G), where alpha(G) is the independence number and rad(G) is t"
+    },
+    {
+      "id": "bound-cage-k3g14",
+      "class": "A",
+      "t": 6.0,
+      "src": "websearch",
+      "nl": "n(3,14) is the number of vertices in the smallest 3-regular (cubic) graph of girth 14 (a (3,14)-cage). The current range"
+    },
+    {
+      "id": "bound-cr-K13",
+      "class": "A",
+      "t": 6.0,
+      "src": "websearch",
+      "nl": "cr(K13) is the minimum number of edge crossings over all drawings of the complete graph K13 in the plane. Guy's conjectu"
+    },
+    {
+      "id": "bound-kissing-d10",
+      "class": "A",
+      "t": 6.0,
+      "src": "websearch",
+      "nl": "The kissing number K(10) is the maximum number of non-overlapping unit spheres that can simultaneously touch a central u"
+    },
+    {
+      "id": "bound-kissing-d11",
+      "class": "A",
+      "t": 6.0,
+      "src": "websearch",
+      "nl": "The kissing number K(11) is the maximum number of non-overlapping unit spheres that can simultaneously touch a central u"
+    },
+    {
+      "id": "bound-kissing-d12",
+      "class": "A",
+      "t": 6.0,
+      "src": "websearch",
+      "nl": "The kissing number K(12) is the maximum number of non-overlapping unit spheres that can simultaneously touch a central u"
+    },
+    {
+      "id": "bound-kissing-d9",
+      "class": "A",
+      "t": 6.0,
+      "src": "websearch",
+      "nl": "The kissing number K(9) is the maximum number of non-overlapping unit spheres that can simultaneously touch a central un"
+    },
+    {
+      "id": "bound-ramsey-R6-6",
+      "class": "A",
+      "t": 6.0,
+      "src": "clone:arthaschan/r55research",
+      "nl": "The Ramsey number R(6,6) is the smallest n such that every 2-colouring of the edges of K_n contains a monochromatic K_6."
+    },
+    {
+      "id": "bound-vdw-W4-4",
+      "class": "A",
+      "t": 6.0,
+      "src": "websearch",
+      "nl": "The van der Waerden number W(4,4) is the smallest N such that every 2-colouring of {1,...,N} contains a monochromatic 4-"
     },
     {
       "id": "erdos-0647-a",
@@ -233,83 +316,6 @@
       "t": 5.5,
       "src": "erdosproblems.com (via formal-conjectures)",
       "nl": "Is the chromatic number of `J(2 * k, k)` always at least `k + 2`?"
-    },
-    {
-      "id": "erdos-1082",
-      "class": "A",
-      "t": 5.5,
-      "src": "erdosproblems.com (via formal-conjectures)",
-      "nl": "Let A\u2282 \u211d^2 be a set of n points with no three on a line. Does A determine at least floor( n/2) distinct distances?"
-    },
-    {
-      "id": "fc-greensopenproblems-31-f",
-      "class": "C",
-      "t": 5.5,
-      "src": "Ben Green's open problems list (Ben Green's Open Problem 31)",
-      "nl": "Context (Ben Green's Open Problem 31). It is not known whether, if $G$ is an abelian group of size $n$, there always exi"
-    },
-    {
-      "id": "fc-greensopenproblems-5-b",
-      "class": "A",
-      "t": 5.5,
-      "src": "Ben Green's open problems list (Ben Green's Open Problem 5)",
-      "nl": "Context (Ben Green's Open Problem 5). A good model problem would be to determine the largest product-free subsets of $\\m"
-    },
-    {
-      "id": "fc-wikipedia-Exponentials-a",
-      "class": "A",
-      "t": 5.5,
-      "src": "Wikipedia: Four exponentials conjecture",
-      "nl": "Context (Exponentials conjectures and theorems). **Four exponentials conjecture** Let $x_0, x_1$ and $y_0, y_1$ be $\\mat"
-    },
-    {
-      "id": "fc-wikipedia-SnakeInTheBox",
-      "class": "C",
-      "t": 5.5,
-      "src": "Wikipedia: Snake-in-the-box",
-      "nl": "Context (Snake in the box). For dimension $9$, the length of the longest snake in the box is not known. This is currentl"
-    },
-    {
-      "id": "wow2-100",
-      "class": "A",
-      "t": 5.5,
-      "src": "formal-conjectures/WrittenOnTheWallII (E. DeLaVina, Written on the Wall II: Conjectures of Graffiti.pc)",
-      "nl": "For every finite simple connected graph G, alpha(G) <= ceil( ( max_v l(v) + 0.5*length(complement of G) ) / 2 ), where a"
-    },
-    {
-      "id": "wow2-160",
-      "class": "A",
-      "t": 5.5,
-      "src": "formal-conjectures/WrittenOnTheWallII (E. DeLaVina, Written on the Wall II: Conjectures of Graffiti.pc)",
-      "nl": "For every finite simple connected graph G, Ls(G) >= max_v l(v) + (max_v T(v)) * cC4(G), where Ls(G) is the maximum numbe"
-    },
-    {
-      "id": "wow2-291",
-      "class": "A",
-      "t": 5.5,
-      "src": "formal-conjectures/WrittenOnTheWallII (E. DeLaVina, Written on the Wall II: Conjectures of Graffiti.pc)",
-      "nl": "For every finite simple connected graph G with n(G) > 2, gamma_t(G) <= k(G) + freq_min_T(G), where gamma_t(G) is the tot"
-    },
-    {
-      "id": "wow2-314",
-      "class": "A",
-      "t": 5.5,
-      "src": "formal-conjectures/WrittenOnTheWallII (E. DeLaVina, Written on the Wall II: Conjectures of Graffiti.pc)",
-      "nl": "For every finite simple connected graph G on at least two vertices, if G is triangle-free and its largest induced path h"
-    },
-    {
-      "id": "wow2-40",
-      "class": "A",
-      "t": 5.5,
-      "src": "formal-conjectures/WrittenOnTheWallII (E. DeLaVina, Written on the Wall II: Conjectures of Graffiti.pc)",
-      "nl": "For every finite simple connected graph G on at least two vertices, f(G) >= ceil( (p(G) + b(G) + 1)/2 ), where f(G) is t"
-    },
-    {
-      "id": "erdos-0014-a",
-      "class": "C",
-      "t": 5.0,
-      "src": "erdosproblems.com (via formal-conjectures)",
-      "nl": "Let A \u2286 \u2115. Let B \u2286 \u2115 be the set of integers which are representable in exactly one way as the sum of two elements from A"
     }
   ]
 }
