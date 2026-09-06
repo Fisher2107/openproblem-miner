@@ -1,0 +1,9 @@
+{
+  "family": "ramsey",
+  "s": 4,
+  "t": 4,
+  "n": 17,
+  "graph6": "PzlXWmJpZDeJEJbDgp\\EJsWk",
+  "published_lower_bound": 17,
+  "note": "Paley graph of order 17; the classical certificate for R(4,4) > 17"
+}

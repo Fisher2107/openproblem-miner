@@ -1,0 +1,22 @@
+{
+  "family": "schur",
+  "r": 3,
+  "n": 14,
+  "colouring": [
+    0,
+    1,
+    1,
+    0,
+    2,
+    2,
+    2,
+    2,
+    2,
+    0,
+    1,
+    1,
+    0,
+    0
+  ],
+  "note": "S(3)=13 so no 3-colouring of [1,14] works; must REJECT"
+}

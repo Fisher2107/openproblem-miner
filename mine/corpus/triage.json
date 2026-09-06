@@ -1,0 +1,315 @@
+{
+  "raw_entries": 1434,
+  "per_cluster_raw": {
+    "h1_erdos.jsonl": 578,
+    "h2_formal.jsonl": 803,
+    "h5_graphinv.jsonl": 53
+  },
+  "after_dedupe": 1422,
+  "duplicates_merged": 12,
+  "by_class": {
+    "A": 102,
+    "C": 351,
+    "B": 144,
+    "D": 825
+  },
+  "by_cluster": {
+    "h1": 566,
+    "h2": 803,
+    "h5": 53
+  },
+  "tractability_hist": {
+    "7": 8,
+    "6": 13,
+    "5": 41,
+    "4": 211,
+    "3": 146,
+    "2": 174,
+    "1": 605,
+    "0": 224
+  },
+  "attack_eligible": 1366,
+  "excluded_solved_or_unverified": 56,
+  "top40": [
+    {
+      "id": "erdos-0835-a",
+      "class": "A",
+      "t": 7.5,
+      "src": "erdosproblems.com (via formal-conjectures)",
+      "nl": "Does there exist a k>2 such that the k-sized subsets of {1,...,2k} can be coloured with k+1 colours such that for every "
+    },
+    {
+      "id": "erdos-1041",
+      "class": "A",
+      "t": 7.5,
+      "src": "erdosproblems.com (via formal-conjectures)",
+      "nl": "Let f(z) = \u03a0_{i=1}^{n} (z - z_i) \u2208 \u2102[x] with |z_i| < 1 for all i. Conjecture: Must there always exist a path of length l"
+    },
+    {
+      "id": "erdos-0307-b",
+      "class": "A",
+      "t": 7.0,
+      "src": "erdosproblems.com (via formal-conjectures)",
+      "nl": "There are no examples known of the weakened coprime version if we insist that 1\u2209 P\u222a Q."
+    },
+    {
+      "id": "erdos-0366-a",
+      "class": "A",
+      "t": 7.0,
+      "src": "erdosproblems.com (via formal-conjectures)",
+      "nl": "Are there any 2-full n such that n+1 is 3-full?"
+    },
+    {
+      "id": "erdos-0723-b",
+      "class": "A",
+      "t": 7.0,
+      "src": "erdosproblems.com (via formal-conjectures)",
+      "nl": "It is open whether there exists a projective plane of order 12."
+    },
+    {
+      "id": "erdos-0779",
+      "class": "A",
+      "t": 7.0,
+      "src": "erdosproblems.com (via formal-conjectures)",
+      "nl": "A Conjecture of Marian Deaconescu, see p.120 in https://doi.org/10.2307/2975810 [Needed to index shift in order to avoid"
+    },
+    {
+      "id": "fc-mathoverflow-21003",
+      "class": "A",
+      "t": 7.0,
+      "src": "MathOverflow question 21003",
+      "nl": "Context (Mathoverflow 21003). Is there any polynomial $f(x, y) \\in \\mathbb{Q}[x, y]$ such that $f : \\mathbb{Q} \\times \\m"
+    },
+    {
+      "id": "fc-wikipedia-EulerBrick-b",
+      "class": "A",
+      "t": 7.0,
+      "src": "Wikipedia: Euler brick",
+      "nl": "Context (Open questions regarding the existence of Euler bricks). Is there an Euler brick in $4$-dimensional space?\n\nDef"
+    },
+    {
+      "id": "erdos-0023",
+      "class": "A",
+      "t": 6.5,
+      "src": "erdosproblems.com (via formal-conjectures)",
+      "nl": "Can every triangle-free graph on 5n vertices be made bipartite by deleting at most n^2 edges?"
+    },
+    {
+      "id": "erdos-0617",
+      "class": "A",
+      "t": 6.5,
+      "src": "erdosproblems.com (via formal-conjectures)",
+      "nl": "Let r\u2265 3. If the edges of K_{r^2+1} are r-coloured then there exist r+1 vertices with at least one colour missing on the"
+    },
+    {
+      "id": "erdos-0628",
+      "class": "A",
+      "t": 6.5,
+      "src": "erdosproblems.com (via formal-conjectures)",
+      "nl": "Let G be a graph with chromatic number k containing no K_k. If a,b\u2265 2 and a+b=k+1 then must there exist two disjoint sub"
+    },
+    {
+      "id": "erdos-0835-b",
+      "class": "A",
+      "t": 6.5,
+      "src": "erdosproblems.com (via formal-conjectures)",
+      "nl": "Alternative statement of Erd\u0151s Problem 835 using the chromatic number of the Johnson graph. This is equivalent to asking"
+    },
+    {
+      "id": "erdos-0982",
+      "class": "A",
+      "t": 6.5,
+      "src": "erdosproblems.com (via formal-conjectures)",
+      "nl": "If n distinct points in \u211d^2 form a convex polygon then some vertex has at least floor((n)/(2)) different distances to ot"
+    },
+    {
+      "id": "fc-wikipedia-Conway99Graph",
+      "class": "A",
+      "t": 6.5,
+      "src": "Wikipedia: Conway's 99-graph problem",
+      "nl": "Context (Conway's 99-graph problem). Does there exist an undirected graph with 99 vertices, in which each two adjacent v"
+    },
+    {
+      "id": "graffiti-3",
+      "class": "A",
+      "t": 6.5,
+      "src": "Fajtlowicz's Graffiti (as reproduced in the TxGraffiti2 documentation)",
+      "nl": "For every finite simple connected graph G, alpha(G) >= rad(G), where alpha(G) is the independence number and rad(G) is t"
+    },
+    {
+      "id": "erdos-0647-a",
+      "class": "A",
+      "t": 6.0,
+      "src": "erdosproblems.com (via formal-conjectures)",
+      "nl": "Let \u03c4(n) count the number of divisors of n. Is there some n > 24 such that max_{m < n}(m + \u03c4(m)) \u2264 n + 2?"
+    },
+    {
+      "id": "wow2-133",
+      "class": "A",
+      "t": 6.0,
+      "src": "formal-conjectures/WrittenOnTheWallII (E. DeLaVina, Written on the Wall II: Conjectures of Graffiti.pc)",
+      "nl": "For every finite simple connected graph G, path(G) >= rad(G) + floor(l_avg(G))^{cC4(G)}, where path(G) is the maximum or"
+    },
+    {
+      "id": "wow2-141",
+      "class": "A",
+      "t": 6.0,
+      "src": "formal-conjectures/WrittenOnTheWallII (E. DeLaVina, Written on the Wall II: Conjectures of Graffiti.pc)",
+      "nl": "For every finite simple connected graph G, tree(G) >= floor(girth(G)/2) - 1 + max_v l(v), where tree(G) is the maximum o"
+    },
+    {
+      "id": "wow2-19",
+      "class": "A",
+      "t": 6.0,
+      "src": "formal-conjectures/WrittenOnTheWallII (E. DeLaVina, Written on the Wall II: Conjectures of Graffiti.pc)",
+      "nl": "For every finite simple connected graph G on at least two vertices, b(G) >= floor( (sum over v of ecc(v))/n(G) + max_v l"
+    },
+    {
+      "id": "wow2-198a",
+      "class": "A",
+      "t": 6.0,
+      "src": "formal-conjectures/WrittenOnTheWallII (E. DeLaVina, Written on the Wall II: Conjectures of Graffiti.pc)",
+      "nl": "For every finite simple connected graph G on at least two vertices, if b(G) <= 2 + ecc_avg(G) then G has a Hamiltonian p"
+    },
+    {
+      "id": "wow2-61",
+      "class": "A",
+      "t": 6.0,
+      "src": "formal-conjectures/WrittenOnTheWallII (E. DeLaVina, Written on the Wall II: Conjectures of Graffiti.pc)",
+      "nl": "For every finite simple connected graph G, f(G) >= residue(G) + ceil(diam(G)/3), where f(G) is the maximum order of an i"
+    },
+    {
+      "id": "erdos-0007",
+      "class": "A",
+      "t": 5.5,
+      "src": "erdosproblems.com (via formal-conjectures)",
+      "nl": "Is there a covering system all of whose moduli are odd (and greater than 1)?"
+    },
+    {
+      "id": "erdos-0064",
+      "class": "A",
+      "t": 5.5,
+      "src": "erdosproblems.com (via formal-conjectures)",
+      "nl": "Does every finite graph with minimum degree at least 3 contain a cycle of length 2^k for some k \u2265 2?"
+    },
+    {
+      "id": "erdos-0128",
+      "class": "A",
+      "t": 5.5,
+      "src": "erdosproblems.com (via formal-conjectures)",
+      "nl": "Let G be a graph with n vertices such that every induced subgraph on \u2265 n/2 vertices has more than n^2/50 edges. Must G c"
+    },
+    {
+      "id": "erdos-0172",
+      "class": "C",
+      "t": 5.5,
+      "src": "erdosproblems.com (via formal-conjectures)",
+      "nl": "Is it true that in any finite colouring of \u2115 there exist arbitrarily large finite A such that all sums and products of d"
+    },
+    {
+      "id": "erdos-0195",
+      "class": "C",
+      "t": 5.5,
+      "src": "erdosproblems.com (via formal-conjectures)",
+      "nl": "What is the largest k such that in any permutation of \u2124 there must exist a monotone k-term arithmetic progression x_1 <."
+    },
+    {
+      "id": "erdos-0375",
+      "class": "A",
+      "t": 5.5,
+      "src": "erdosproblems.com (via formal-conjectures)",
+      "nl": "Is `Erdos375Prop` true?  [Definitions used in the formal statement \u2014 Erdos375Prop: This is a proposition saying that for"
+    },
+    {
+      "id": "erdos-0488",
+      "class": "A",
+      "t": 5.5,
+      "src": "erdosproblems.com (via formal-conjectures)",
+      "nl": "Let A be a finite set and B={ n \u2265 1: a| n for some a\u2208 A}. Is it true that, for every m>n\u2265 max(A), (| B\u2229 [1,m]| )/(m)< 2("
+    },
+    {
+      "id": "erdos-0835-c",
+      "class": "A",
+      "t": 5.5,
+      "src": "erdosproblems.com (via formal-conjectures)",
+      "nl": "Is the chromatic number of `J(2 * k, k)` always at least `k + 2`?"
+    },
+    {
+      "id": "erdos-1082",
+      "class": "A",
+      "t": 5.5,
+      "src": "erdosproblems.com (via formal-conjectures)",
+      "nl": "Let A\u2282 \u211d^2 be a set of n points with no three on a line. Does A determine at least floor( n/2) distinct distances?"
+    },
+    {
+      "id": "fc-greensopenproblems-31-f",
+      "class": "C",
+      "t": 5.5,
+      "src": "Ben Green's open problems list (Ben Green's Open Problem 31)",
+      "nl": "Context (Ben Green's Open Problem 31). It is not known whether, if $G$ is an abelian group of size $n$, there always exi"
+    },
+    {
+      "id": "fc-greensopenproblems-5-b",
+      "class": "A",
+      "t": 5.5,
+      "src": "Ben Green's open problems list (Ben Green's Open Problem 5)",
+      "nl": "Context (Ben Green's Open Problem 5). A good model problem would be to determine the largest product-free subsets of $\\m"
+    },
+    {
+      "id": "fc-wikipedia-Exponentials-a",
+      "class": "A",
+      "t": 5.5,
+      "src": "Wikipedia: Four exponentials conjecture",
+      "nl": "Context (Exponentials conjectures and theorems). **Four exponentials conjecture** Let $x_0, x_1$ and $y_0, y_1$ be $\\mat"
+    },
+    {
+      "id": "fc-wikipedia-SnakeInTheBox",
+      "class": "C",
+      "t": 5.5,
+      "src": "Wikipedia: Snake-in-the-box",
+      "nl": "Context (Snake in the box). For dimension $9$, the length of the longest snake in the box is not known. This is currentl"
+    },
+    {
+      "id": "wow2-100",
+      "class": "A",
+      "t": 5.5,
+      "src": "formal-conjectures/WrittenOnTheWallII (E. DeLaVina, Written on the Wall II: Conjectures of Graffiti.pc)",
+      "nl": "For every finite simple connected graph G, alpha(G) <= ceil( ( max_v l(v) + 0.5*length(complement of G) ) / 2 ), where a"
+    },
+    {
+      "id": "wow2-160",
+      "class": "A",
+      "t": 5.5,
+      "src": "formal-conjectures/WrittenOnTheWallII (E. DeLaVina, Written on the Wall II: Conjectures of Graffiti.pc)",
+      "nl": "For every finite simple connected graph G, Ls(G) >= max_v l(v) + (max_v T(v)) * cC4(G), where Ls(G) is the maximum numbe"
+    },
+    {
+      "id": "wow2-291",
+      "class": "A",
+      "t": 5.5,
+      "src": "formal-conjectures/WrittenOnTheWallII (E. DeLaVina, Written on the Wall II: Conjectures of Graffiti.pc)",
+      "nl": "For every finite simple connected graph G with n(G) > 2, gamma_t(G) <= k(G) + freq_min_T(G), where gamma_t(G) is the tot"
+    },
+    {
+      "id": "wow2-314",
+      "class": "A",
+      "t": 5.5,
+      "src": "formal-conjectures/WrittenOnTheWallII (E. DeLaVina, Written on the Wall II: Conjectures of Graffiti.pc)",
+      "nl": "For every finite simple connected graph G on at least two vertices, if G is triangle-free and its largest induced path h"
+    },
+    {
+      "id": "wow2-40",
+      "class": "A",
+      "t": 5.5,
+      "src": "formal-conjectures/WrittenOnTheWallII (E. DeLaVina, Written on the Wall II: Conjectures of Graffiti.pc)",
+      "nl": "For every finite simple connected graph G on at least two vertices, f(G) >= ceil( (p(G) + b(G) + 1)/2 ), where f(G) is t"
+    },
+    {
+      "id": "erdos-0014-a",
+      "class": "C",
+      "t": 5.0,
+      "src": "erdosproblems.com (via formal-conjectures)",
+      "nl": "Let A \u2286 \u2115. Let B \u2286 \u2115 be the set of integers which are representable in exactly one way as the sum of two elements from A"
+    }
+  ]
+}
