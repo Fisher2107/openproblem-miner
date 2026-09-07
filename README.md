@@ -34,34 +34,53 @@ version:
   wrong, and the rule that replaces them — schedule on how restrictive a conjecture's
   hypotheses are, not on how tractable its statement looks.
 
+## What run 2 changes
+
+Run 1's zero was not bad luck. It spent every core-hour in regions already swept — WOWII at
+n ≤ 10 when that family's known counterexamples sit at n = 11, 13 and 18; Erdős–Straus at
+10⁴ against a published 10¹⁷. Its rubric asked *is this class enumerable*; the question that
+decides the outcome is *has anyone already looked, and how far*. Four changes follow:
+
+- **A frontier gate.** `frontier.published_n` is a required corpus field, and a target is
+  attack-eligible only when `reachable_n > published_n`. No compute crosses that line.
+- **Breadth over fame.** Machine-generated conjecture families become the primary harvest
+  cluster (target ≥ 2000), class D is capped at 10%. Run 1's corpus was 56% proof-only
+  lottery tickets and 3.4% machine-generated — and the only unswept ground it found was
+  inside the 3.4%.
+- **Schedule on hypothesis restrictiveness, not statement tractability.** Restrictive
+  hypotheses shrink the class, which is what buys reach: n = 22 on cubic+bipartite+planar
+  +3-connected versus n = 10 on general graphs, same hardware.
+- **Positive controls are a precondition.** No searcher's negative counts until it has
+  rediscovered a known counterexample of the same shape.
+
 ## How it works
 
-1. **Harvest** — six parallel subagents scrape pre-registered open problems: the Erdős
-   problem collection, formalized Lean corpora, curated open-problem lists, published
-   bound tables with open gaps, machine-generated graph-invariant conjectures, and recent
-   arXiv conjecture statements.
-2. **Triage** — every problem is classified by *attack surface*, not by fame:
+1. **Probe** — establish the toolchain and egress first; the budget split is derived from
+   what actually installs, not fixed in advance.
+2. **Harvest** — six parallel subagents, weighted toward machine-generated conjecture
+   families, each entry carrying a cited published search frontier.
+3. **Triage** — every problem is classified by *attack surface*, not by fame:
    - **A** finite-witness refutable — counterexample is a small finite object
    - **B** parametric-construction refutable — needs a symbolic certificate
    - **C** bound-improvable — continuous objective, so search has a gradient
    - **D** proof-only — Riemann-shaped lottery tickets
    
-   Budget goes 70% to A+C, 20% to B, 10% to D. Pointing everything at the famous problems
-   is the losing move.
-3. **Build the verifier first** — before any search, then hash-lock it.
-4. **Attack** — waves of subagents on a cost ladder: brute-force small cases → SAT/ILP/SMT
-   encodings → evolve short generator *programs* scored by distance-to-violation → symbolic
-   close. Scheduled as a bandit; flat arms are killed and their budget reallocated. Failed
-   approaches are logged and fed to later waves.
-5. **Verify in tiers** — T0 float screen → T1 exact/interval → T2 a fresh agent that sees
+   …and then gated: only targets whose reachable frontier exceeds the published one are
+   attacked at all. Pointing everything at the famous problems is the losing move.
+4. **Build the verifier** — after the harvest and triage are complete, before any search,
+   with checkers written per *witness shape*; then hash-lock it.
+5. **Attack** — one broad sweep across every eligible statement at its own frontier size
+   first, then deep arms on whatever that flags: brute force → SAT/ILP/SMT encodings →
+   evolve short generator *programs* scored by distance-to-violation → symbolic close.
+   Bandit-scheduled on reach per core-hour. Failed approaches feed later waves.
+6. **Verify in tiers** — T0 float screen → T1 exact/interval → T2 a fresh agent that sees
    only the statement and the witness, never the original code → T3 Lean, compiling with
    no `sorry`.
 
 ## Running it
 
 Point a cloud agent session at this repo and give it `GOAL.md` as the task. `GOAL.md` is a
-self-contained one-shot brief under 4,000 characters; `MISSION.md` is the long form with
-per-phase detail. `CLAUDE.md` is loaded automatically and carries the non-negotiable rules.
+self-contained one-shot brief; `MISSION.md` is the long form with per-phase detail. `CLAUDE.md` is loaded automatically and carries the non-negotiable rules.
 
 ```bash
 scripts/setup-verifier.sh   # P3: install the toolchain, record what's missing
@@ -93,7 +112,11 @@ checkout, it isn't a result.**
 
 ## Status
 
-Scaffolding only — no mining run has been executed yet. `mine/` is empty by design.
+**Run 1 complete (2026-09-06), zero results, fully reported.** See `mine/REPORT.md` and the
+outcome summary above; `bash scripts/reproduce-run1.sh` re-verifies every claim in it.
+
+`GOAL.md`, `MISSION.md` and `CLAUDE.md` have since been revised against run 1's calibration
+section — the changes are listed under "What run 2 changes". Run 2 has not been executed.
 
 ## Prior art worth reading first
 
