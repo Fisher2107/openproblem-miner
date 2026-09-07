@@ -384,3 +384,100 @@ theorem conn225 : ConnectedIn 225 := by
 
 theorem G_treeNumber : TreeNumber 4 :=
   ⟨⟨225, by omega, ⟨by decide, conn225, by decide⟩, by decide⟩, tree_upper⟩
+
+/-! ## §6  Part 3 of the theorem: the l-values and their sum
+
+`l(v)` is the independence number of the subgraph induced on the open neighbourhood `N(v)`.
+Since that subgraph is *induced*, a set of vertices of `N(v)` is independent in it exactly
+when it is independent in G, so `l v = k` says: some `k`-element set of pairwise
+non-adjacent neighbours of `v` exists, and no larger one does. -/
+
+/-- Every vertex of the set `m` is a neighbour of `v`, i.e. `m ⊆ N(v)`. -/
+def SubNbhd (v m : Nat) : Prop := ∀ u, u < 11 → InMask m u → Adj v u
+
+/-- The vertices of the set `m` are pairwise non-adjacent. -/
+def Indep (m : Nat) : Prop :=
+  ∀ u w, u < 11 → w < 11 → InMask m u → InMask m w → u ≠ w → ¬ Adj u w
+
+/-- `LVal v k` says `l(v) = k`. -/
+def LVal (v k : Nat) : Prop :=
+  (∃ m, m < 2048 ∧ SubNbhd v m ∧ Indep m ∧ card m = k) ∧
+  (∀ m, m < 2048 → SubNbhd v m → Indep m → card m ≤ k)
+
+def subNbhdB (v m : Nat) : Bool := allBelow (fun u => !(m.testBit u) || adjB v u) 11
+
+def indepB (m : Nat) : Bool :=
+  allBelow (fun u => allBelow (fun w =>
+    !(m.testBit u) || !(m.testBit w) || decide (u = w) || !(adjB u w)) 11) 11
+
+theorem subNbhd_iff (v m : Nat) : SubNbhd v m ↔ subNbhdB v m = true := by
+  rw [subNbhdB, allBelow_iff]
+  constructor
+  · intro h u hu
+    cases hb : m.testBit u with
+    | false => simp [hb]
+    | true =>
+      have hA := (adj_iff v u).1 (h u hu hb)
+      simp [hb, hA]
+  · intro h u hu hm
+    have hb := h u hu
+    rw [InMask] at hm
+    rw [hm] at hb
+    simp at hb
+    exact (adj_iff v u).2 hb
+
+theorem indep_iff (m : Nat) : Indep m ↔ indepB m = true := by
+  rw [indepB, allBelow_iff]
+  constructor
+  · intro h u hu
+    rw [allBelow_iff]
+    intro w hw
+    cases hbu : m.testBit u with
+    | false => simp [hbu]
+    | true =>
+      cases hbw : m.testBit w with
+      | false => simp [hbw]
+      | true =>
+        cases hEq : decide (u = w) with
+        | true => simp [hEq]
+        | false =>
+          have hne : u ≠ w := by simpa using hEq
+          have hnot := h u w hu hw hbu hbw hne
+          have h2 : adjB u w = false := by
+            cases hab : adjB u w with
+            | false => rfl
+            | true => exact absurd ((adj_iff u w).2 hab) hnot
+          simp [h2]
+  · intro h u w hu hw hmu hmw hne hadj
+    have hb := (allBelow_iff _ _).1 (h u hu) w hw
+    rw [InMask] at hmu hmw
+    have hd : decide (u = w) = false := by simp [hne]
+    rw [hmu, hmw, hd, (adj_iff u w).1 hadj] at hb
+    simp at hb
+
+/-- For every vertex set `m`: if `m ⊆ N(v)` and `m` is independent then `|m| ≤ k`. -/
+def lChk (v k : Nat) (m : Nat) : Bool :=
+  !(subNbhdB v m) || !(indepB m) || decide (card m ≤ k)
+
+theorem lVal_of {v k mw : Nat} (hw : mw < 2048) (h1 : subNbhdB v mw = true)
+    (h2 : indepB mw = true) (h3 : card mw = k)
+    (hall : allBelow (lChk v k) 2048 = true) : LVal v k := by
+  refine ⟨⟨mw, hw, (subNbhd_iff v mw).2 h1, (indep_iff mw).2 h2, h3⟩, ?_⟩
+  intro m hm hs hi
+  have hb := (allBelow_iff _ _).1 hall m hm
+  rw [lChk, (subNbhd_iff v m).1 hs, (indep_iff m).1 hi] at hb
+  simpa using hb
+
+-- witnesses: {5,6,7} for v=0,1;  {0,1,8} for v=2;  {0,1,9} for v=3;  {0,1,10} for v=4;
+--            {0,1} for v=5,6,7;  {2},{3},{4} for v=8,9,10.
+theorem l_0  : LVal 0  3 := lVal_of (mw := 224)  (by omega) (by decide) (by decide) (by decide) (by decide +kernel)
+theorem l_1  : LVal 1  3 := lVal_of (mw := 224)  (by omega) (by decide) (by decide) (by decide) (by decide +kernel)
+theorem l_2  : LVal 2  3 := lVal_of (mw := 259)  (by omega) (by decide) (by decide) (by decide) (by decide +kernel)
+theorem l_3  : LVal 3  3 := lVal_of (mw := 515)  (by omega) (by decide) (by decide) (by decide) (by decide +kernel)
+theorem l_4  : LVal 4  3 := lVal_of (mw := 1027) (by omega) (by decide) (by decide) (by decide) (by decide +kernel)
+theorem l_5  : LVal 5  2 := lVal_of (mw := 3)    (by omega) (by decide) (by decide) (by decide) (by decide +kernel)
+theorem l_6  : LVal 6  2 := lVal_of (mw := 3)    (by omega) (by decide) (by decide) (by decide) (by decide +kernel)
+theorem l_7  : LVal 7  2 := lVal_of (mw := 3)    (by omega) (by decide) (by decide) (by decide) (by decide +kernel)
+theorem l_8  : LVal 8  1 := lVal_of (mw := 4)    (by omega) (by decide) (by decide) (by decide) (by decide +kernel)
+theorem l_9  : LVal 9  1 := lVal_of (mw := 8)    (by omega) (by decide) (by decide) (by decide) (by decide +kernel)
+theorem l_10 : LVal 10 1 := lVal_of (mw := 16)   (by omega) (by decide) (by decide) (by decide) (by decide +kernel)
