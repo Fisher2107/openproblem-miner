@@ -481,3 +481,99 @@ theorem l_7  : LVal 7  2 := lVal_of (mw := 3)    (by omega) (by decide) (by deci
 theorem l_8  : LVal 8  1 := lVal_of (mw := 4)    (by omega) (by decide) (by decide) (by decide) (by decide +kernel)
 theorem l_9  : LVal 9  1 := lVal_of (mw := 8)    (by omega) (by decide) (by decide) (by decide) (by decide +kernel)
 theorem l_10 : LVal 10 1 := lVal_of (mw := 16)   (by omega) (by decide) (by decide) (by decide) (by decide +kernel)
+
+/-! ## §7  Part 4 of the theorem: G has no Hamiltonian path -/
+
+/-- `Chain' R l`: consecutive entries of `l` are related by `R`. -/
+inductive Chain' (R : Nat → Nat → Prop) : List Nat → Prop
+  | nil : Chain' R []
+  | single (a : Nat) : Chain' R [a]
+  | cons {a b : Nat} {l : List Nat} : R a b → Chain' R (b :: l) → Chain' R (a :: b :: l)
+
+/-- `Nodup l`: no entry of `l` occurs twice. -/
+inductive Nodup : List Nat → Prop
+  | nil : Nodup []
+  | cons {a : Nat} {l : List Nat} : a ∉ l → Nodup l → Nodup (a :: l)
+
+def firstOf : List Nat → Option Nat
+  | [] => none
+  | a :: _ => some a
+
+def lastOf : List Nat → Option Nat
+  | [] => none
+  | [a] => some a
+  | _ :: t => lastOf t
+
+theorem lastOf_cons_cons (x y : Nat) (t : List Nat) :
+    lastOf (x :: y :: t) = lastOf (y :: t) := rfl
+
+/-- `l` is a Hamiltonian path of G: its entries are pairwise distinct, consecutive entries
+are adjacent, and every vertex of G occurs in it. -/
+def IsHamPath (l : List Nat) : Prop :=
+  Nodup l ∧ Chain' Adj l ∧ (∀ v, v < 11 → v ∈ l)
+
+/-- If every neighbour of `v` equals `w`, then `v` has at most one neighbour. -/
+theorem uniq_nbr {v w : Nat}
+    (hb : allBelow (fun z => !(adjB v z) || decide (z = w)) 11 = true) :
+    ∀ x y, Adj v x → Adj v y → x = y := by
+  intro x y hx hy
+  have h1 := (allBelow_iff _ _).1 hb x hx.2.1
+  have h2 := (allBelow_iff _ _).1 hb y hy.2.1
+  rw [(adj_iff v x).1 hx] at h1
+  rw [(adj_iff v y).1 hy] at h2
+  simp at h1 h2
+  omega
+
+/-- **The endpoint lemma.**  A vertex with at most one neighbour can only occur as the
+first or the last entry of a path: at an interior position it would have two distinct
+neighbours in the list. -/
+theorem deg_one_endpoint {v : Nat} (huniq : ∀ x y, Adj v x → Adj v y → x = y) :
+    ∀ l : List Nat, Chain' Adj l → Nodup l → v ∈ l →
+      firstOf l = some v ∨ lastOf l = some v := by
+  intro l
+  induction l with
+  | nil => intro _ _ hv; exact absurd hv (by simp)
+  | cons x t ih =>
+    intro hc hn hv
+    cases t with
+    | nil =>
+      left
+      cases hv with
+      | head => rfl
+      | tail _ h => exact absurd h (by simp)
+    | cons y t' =>
+      have hxy : Adj x y := by cases hc with | cons h _ => exact h
+      have hcy : Chain' Adj (y :: t') := by cases hc with | cons _ h => exact h
+      have hxn : x ∉ y :: t' := by cases hn with | cons h _ => exact h
+      have hny : Nodup (y :: t') := by cases hn with | cons _ h => exact h
+      cases Nat.decEq v x with
+      | isTrue hvx => left; rw [firstOf, hvx]
+      | isFalse hvx =>
+        have hvt : v ∈ y :: t' := by
+          cases hv with
+          | head => exact absurd rfl hvx
+          | tail _ h => exact h
+        cases ih hcy hny hvt with
+        | inr h => right; rw [lastOf_cons_cons]; exact h
+        | inl h =>
+          have hvy : v = y := by
+            have : some v = some y := by rw [← h]; rfl
+            exact Option.some.inj this
+          cases t' with
+          | nil => right; rw [lastOf_cons_cons, hvy]; rfl
+          | cons z t'' =>
+            exfalso
+            have hyz : Adj y z := by cases hcy with | cons h _ => exact h
+            have h1 : Adj v x := by rw [hvy]; exact adj_symm hxy
+            have h2 : Adj v z := by rw [hvy]; exact hyz
+            have hxz : x = z := huniq x z h1 h2
+            exact hxn (by rw [hxz]; exact List.Mem.tail _ (List.Mem.head _))
+
+theorem no_ham_path : ¬ ∃ l : List Nat, IsHamPath l := by
+  intro h
+  obtain ⟨l, hn, hc, hall⟩ := h
+  have e8 := deg_one_endpoint (uniq_nbr (v := 8) (w := 2) (by decide)) l hc hn (hall 8 (by omega))
+  have e9 := deg_one_endpoint (uniq_nbr (v := 9) (w := 3) (by decide)) l hc hn (hall 9 (by omega))
+  have e10 := deg_one_endpoint (uniq_nbr (v := 10) (w := 4) (by decide)) l hc hn (hall 10 (by omega))
+  -- three vertices of degree 1, but only two endpoints
+  rcases e8 with a | a <;> rcases e9 with b | b <;> rcases e10 with c | c <;> simp_all

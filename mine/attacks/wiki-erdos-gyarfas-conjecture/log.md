@@ -27,12 +27,13 @@ graphs before use — the only safeguard available, since no frozen checker cove
 | 14 | 509 | 0 |
 | 16 | 4,060 | 0 |
 | 18 | 41,301 | 0 |
-| **total** | **45,981** | **0** |
+| 20 | 510,489 | 0 |
+| **total** | **556,470** | **0** |
 
-**Verdict.** No counterexample at n <= 18. The literature is well ahead of this (the
+**Verdict.** No counterexample at n <= 20. The literature is well ahead of this (the
 conjecture is known for various structural classes and has been checked far further), so
 this arm reproduces known ground rather than extending it — the honest value is that it
-demonstrates the reach that class-scarcity buys: 18 vertices here versus 10 for general graphs.
+demonstrates the reach that class-scarcity buys: 20 vertices here versus 10 for general graphs.
 
 **Where run 2 should push.** A counterexample must avoid 4-, 8- and 16-cycles at once, so it
 must have girth >= 5, and `nauty-geng -c -d3 -D3 -tf` enumerates exactly that much smaller
@@ -40,4 +41,4 @@ class. That restriction is the same trick that took WOWII conjecture 141 from n 
 n = 16, and it is the right way to spend the next core-hours here.
 
 **Reproduce.**
-`for n in 4 6 8 10 12 14 16 18; do nauty-geng -qc -d3 -D3 $n | ./mine/tools/wowscan --only 901; done`
+`for n in 4 6 8 10 12 14 16 18 20; do nauty-geng -qc -d3 -D3 $n | ./mine/tools/wowscan --only 901; done`
