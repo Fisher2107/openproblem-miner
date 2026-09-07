@@ -219,6 +219,21 @@ The fast C screener may over-report but must never under-report. Its 22 invarian
 compared against the frozen exact library on 850 graphs at n = 8, 9, 10 — **zero
 mismatches** (`python3 mine/tools/crosscheck_invariants.py 10 250`).
 
+### 4.2b The exhaustive negative re-checked by the frozen verifier itself
+
+The sweeps above are the fast C screener's word. Two runs put the frozen checkers behind
+that word:
+
+- **Random sample at n = 9 and 10.** 300 connected graphs sampled uniformly, all ten frozen
+  WOWII checkers run on each: **3,000 checker invocations, 0 ACCEPTs, 0 REFUSEs.**
+  (`mine/tools/verify_n10_sample.py`, log in `mine/attacks/wave1-wowii-exhaustive/verify_n10_sample.log`.)
+- **Exhaustive re-check of the decisive class for conjecture 141.** Since a violation of 141
+  forces girth >= 6, the frozen checker was run on *every* girth >= 6 graph up to n = 14 —
+  not a sample. Result in `verify141_full.log`.
+
+An ACCEPT in either run would have meant the screener under-reported and the headline
+negative was wrong. Neither produced one.
+
 ### 4.3 The verifier earned its keep: it rejected a false witness
 
 The single most important event in the run was not a search result. In the Schur arm, a

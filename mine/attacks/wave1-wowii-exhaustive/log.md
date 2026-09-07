@@ -72,3 +72,24 @@ n = 16, which the girth argument made cheap.
 The counterexamples that *are* known for this family (conjectures 103, 194, 200) live at
 n = 11, 13 and 18. So n <= 10 was always the wrong place to look, and the sweep's real
 contribution is to say so with a measurement instead of a guess.
+
+## The negative, re-checked by the frozen verifier rather than the screener
+
+A "0 candidates" line from `wowscan` is a claim about `wowscan`. Two follow-up runs put the
+frozen checkers behind it:
+
+```
+$ python3 mine/tools/verify_n10_sample.py        # -> verify_n10_sample.log
+VERIFIER INTACT (40 files)
+n=9:  sampled 60 graphs,  600 checker runs so far, 0 ACCEPTs
+n=10: sampled 240 graphs, 3000 checker runs so far, 0 ACCEPTs
+TOTAL frozen-checker runs: 3000, REFUSEs: 0, ACCEPTs: 0
+CONFIRMED: the frozen checkers agree with the screener on every sampled graph.
+```
+
+and, for conjecture 141, an exhaustive rather than sampled re-check of the only class where
+a violation is possible (girth >= 6), via `python3 mine/tools/verify_141_full.py 3 14`
+(-> `verify141_full.log`).
+
+A single ACCEPT in either run would have meant the screener under-reported and this whole
+sweep was worthless. Neither produced one.
