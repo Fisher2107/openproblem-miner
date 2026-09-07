@@ -280,7 +280,7 @@ and it is not in `mine/results/`.
 | T1 | frozen checker accepted it in exact arithmetic: `python3 mine/verify/checkers/check_wow2_200.py` → exit 0, `l_avg = 24/11`, `tree = 4`, no Hamiltonian path |
 | T2 | a **fresh agent given only the statement and the graph6 string** — no access to our code or reasoning — wrote its own checker from scratch, cross-checked its decoder against `nauty-listg`, and independently confirmed all three conditions with identical values, additionally deriving the leaf argument by hand. `mine/attacks/t2-independent/` |
 | T3 | **Lean 4 formalization compiles clean.** `mine/attacks/t3-positive-control/Conj200Control.lean`, self-contained core Lean with no imports (full mathlib is unavailable here — its olean cache host is blocked). Reproduced independently by the orchestrator: `grep -nE "sorry\|native_decide\|admit\|^axiom " Conj200Control.lean` finds nothing, and `lean Conj200Control.lean` compiles in 58s with `#print axioms conj200_counterexample` → `[propext, Quot.sound]` — **no `sorryAx`, no `ofReduceBool`**, so nothing was smuggled in by `sorry` and every computation was done by the kernel rather than by compiled code. |
-| back-translation | a separate agent, forbidden from reading anything but the Lean file and told nothing about the intended statement, rendered the theorem back into English; the diff against `statement_nl` is in `mine/attacks/t3-positive-control/backtranslation.md` |
+| back-translation | a separate agent, forbidden from reading anything but the Lean file and told nothing about the intended statement, rendered the theorem back into English. **It found a real gap** — see below. `mine/attacks/t3-positive-control/backtranslation.md` |
 
 The T2 pass is the meaningful one for catching a constructor and a checker sharing a
 misreading, and it was run blind, exactly as specified. The T3 pass matters for a different
@@ -290,9 +290,36 @@ It is reachable by writing self-contained core Lean and keeping every computatio
 what the kernel can reduce — not by leaning on `native_decide`, which would have been
 easier and would have silently added an axiom.
 
+### What the back-translation caught, and why it is the most useful thing in §5
+
+The back-translation agent was given the Lean file and nothing else — not the conjecture,
+not the corpus entry, not any of this report — and asked to say bluntly what the theorem
+actually asserts. It reported:
+
+> Nowhere in the Lean source is there a Lean proposition that states the universally
+> quantified conjecture itself and then negates it. The file proves four separate facts
+> about one fixed graph; the inference "these four facts together refute the conjecture" is
+> made only in prose, via an implicit modus tollens the reader is expected to perform. That
+> means the Lean type of `conj200_counterexample` is strictly weaker than `¬ Conjecture 200`.
+
+That is exactly right, and it is exactly the failure mode this tier exists to catch: a
+formalization that is true, kernel-checked, axiom-clean — and narrower than the claim it is
+being used to support. Two smaller findings in the same review: the translation of the
+real-valued ceiling `⌈1 + l_avg⌉` into Nat division is asserted in a comment with only the
+numeric instance kernel-checked, and `IsInducedTree` is defined as "connected, nonempty,
+|E| = |V| − 1" with the equivalence to "connected and acyclic" taken as read. Neither
+invalidates the numbers; both are places where the trusted statement is larger than the
+proved one.
+
+The file is being strengthened in response — stating the conjecture as a Lean proposition
+over a general `(n, adj)` and proving its negation, so that the modus tollens happens
+inside the kernel rather than in a comment. **Whatever state that lands in is reported as
+it is**; if the general form does not compile, this section will say the T3 artefact is the
+weaker one the back-translation described.
+
 **None of this is a discovery.** Conjecture 200 was refuted before this run started. What
 the four tiers demonstrate is that had a *new* counterexample turned up, the machinery to
-promote it existed and worked.
+promote it existed, worked, and — importantly — had a step in it that pushed back.
 
 ---
 
