@@ -11,10 +11,14 @@ of the triage rubric's predictions were wrong.
 On the one negative that looks new — **WOWII conjecture 141 holds for every connected graph
 on at most 16 vertices** — the claim is only that no prior verification to that order was
 found in the sources reachable from this container, and those sources were badly
-restricted (§2). Everything else the run exhausted (the other nine WOWII conjectures to
-n = 10, Erdős–Gyárfás over cubic graphs to n = 20, Barnette's class to n = 22) reproduces
-ground the literature had already covered. Reproducing known ground is what validated the
-instrument; it is not a contribution, and it is not presented as one.
+restricted (§2). For the rest, the honest status differs case by case. Erdős–Gyárfás over cubic graphs to
+n = 20 and Barnette's class to n = 22 are **known ground** — both conjectures have been
+checked further in the literature. The other nine WOWII conjectures at n <= 10 are
+**status unknown**: the one published exhaustive sweep we could find in this container
+covers connected graphs on 4..10 vertices for conjecture *200*, a different (and already
+refuted) statement, and says nothing about whether anyone ran the same sweep for these
+nine. We are not claiming that coverage is new, and we are not claiming it is redundant;
+we could not determine which, because the sources that would say are blocked (§2).
 
 Everything below cites a file and a command. Nothing here is a summary of an intended run.
 

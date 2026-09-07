@@ -589,3 +589,67 @@ theorem no_ham_path : ¬ ∃ l : List Nat, IsHamPath l := by
   · exact absurd (key _ _ _ a c) (by decide)
   · exact absurd (key _ _ _ a b) (by decide)
   · exact absurd (key _ _ _ a b) (by decide)
+
+/-! ## §8  Sanity checks (non-vacuity)
+
+None of these is needed for the counterexample.  They guard against the definitions being
+accidentally unsatisfiable or trivially true, which would make the main theorem true for
+the wrong reason. -/
+
+/-- The whole vertex set: 11 vertices, 24 edges — matching the `nauty-listg` matrix. -/
+theorem whole_graph_card : card 2047 = 11 := by decide
+theorem whole_graph_edges : edgeCount 2047 = 24 := by decide
+
+/-- The witness `{0,5,6,7}`: 4 vertices, 3 edges (the star with centre 0). -/
+theorem witness_card_edges : card 225 = 4 ∧ edgeCount 225 = 3 := by decide
+
+/-- The disconnection certificate is not vacuously true: it rejects the connected set
+`{0,5,6,7}` and accepts the disconnected set `{8,9}`. -/
+theorem cert_rejects_connected : disconCert 225 = false := by decide
+theorem cert_accepts_disconnected : disconCert 768 = true := by decide
+
+/-- G *does* have a path through 10 of its 11 vertices, namely `8-2-0-7-1-5-3-6-4-10`.
+So the `Nodup`/`Chain' Adj` machinery is satisfiable by real paths of G: what
+`no_ham_path` rules out is the eleventh vertex, not a broken definition. -/
+theorem near_ham_nodup : Nodup [8,2,0,7,1,5,3,6,4,10] := by
+  repeat (apply Nodup.cons (by decide))
+  exact Nodup.nil
+
+theorem near_ham_chain : Chain' Adj [8,2,0,7,1,5,3,6,4,10] := by
+  repeat (apply Chain'.cons (by decide))
+  exact Chain'.single 10
+
+
+/-! ## §9  G is a counterexample to WOWII Conjecture 200
+
+The conjecture asserts: for every finite simple connected graph G, if
+`tree(G) = ⌈1 + l_avg(G)⌉` then G has a Hamiltonian path.
+
+Here `n = 11`, `sum of l(v) = 3+3+3+3+3+2+2+2+1+1+1 = 24`, so `l_avg = 24/11` and
+`⌈1 + 24/11⌉ = 1 + ⌈24/11⌉ = 1 + 3 = 4`.  Real numbers are avoided: over the naturals,
+`⌈sumL / n⌉ = (sumL + n - 1) / n` with truncating division, and adding the *integer* 1
+commutes with the ceiling, so the hypothesis reads `treeSize = 1 + (sumL + n - 1) / n`,
+i.e. `4 = 1 + (24 + 11 - 1) / 11 = 1 + 34 / 11 = 1 + 3`. -/
+theorem conj200_counterexample :
+    -- (1) G is connected
+    Connected ∧
+    -- (2) tree(G) = 4
+    TreeNumber 4 ∧
+    -- (3) the eleven values l(v)
+    (LVal 0 3 ∧ LVal 1 3 ∧ LVal 2 3 ∧ LVal 3 3 ∧ LVal 4 3 ∧ LVal 5 2 ∧ LVal 6 2 ∧
+      LVal 7 2 ∧ LVal 8 1 ∧ LVal 9 1 ∧ LVal 10 1) ∧
+    -- their sum is 24 over n = 11 vertices
+    (3 + 3 + 3 + 3 + 3 + 2 + 2 + 2 + 1 + 1 + 1 = 24) ∧
+    -- (4) so the hypothesis of Conjecture 200 holds: tree(G) = ⌈1 + l_avg(G)⌉
+    (4 = 1 + (24 + 11 - 1) / 11) ∧
+    -- (5) but G has no Hamiltonian path: the conclusion of Conjecture 200 fails
+    (¬ ∃ l : List Nat, IsHamPath l) :=
+  ⟨G_connected, G_treeNumber,
+   ⟨l_0, l_1, l_2, l_3, l_4, l_5, l_6, l_7, l_8, l_9, l_10⟩,
+   by decide, by decide, no_ham_path⟩
+
+#print axioms conj200_counterexample
+#print axioms G_connected
+#print axioms G_treeNumber
+#print axioms no_ham_path
+#print axioms adj_matches_listg
