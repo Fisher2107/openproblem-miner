@@ -95,3 +95,36 @@ that something findable would have been found. Recorded here rather than present
 alongside the validated negative, because the difference between "searched and found
 nothing" and "searched with an instrument known to detect this kind of thing and found
 nothing" is the whole difference between a measurement and a guess.
+
+## Annealing arm-by-arm: which inequalities are tight, and which have slack
+
+`mine/tools/wowclimb` maximises `lhs - rhs` (scaled by n, so an objective of `-11` at
+n = 11 means the inequality holds with slack exactly 1). 25 restarts x 20,000 steps per
+arm, seeded from random attachment trees (the post-positive-control initialiser).
+Raw log: `climb_results.log`.
+
+| conjecture | best objective, n = 11..14 | reading |
+|---|---|---|
+| 19 | 0, 0, 0, 0 | **tight**: equality is achieved at every order tried |
+| 40 | 0, 0, 0, 0 | **tight** |
+| 61 | 0, 0, 0, −14 | tight up to n = 13; at n = 14 the search only reached slack 1 |
+| 133 | 0, −12, −13 | tight at n = 11, slack 1 above it |
+| 100 | −11, −12, −13, −14 | **slack 1 everywhere** — never reaches equality |
+
+This is the most useful thing the annealer produced, and it is not a "flat arm" result in
+the useless sense. An objective that climbs to exactly 0 and stops says the bound is
+**sharp**: extremal graphs exist, the search finds them, and it cannot get past them. An
+objective that never reaches 0 (conjecture 100) says the bound is not even tight in this
+range — the search is not close, and the conjecture has room to spare.
+
+For scheduling purposes those two situations are opposite. A tight arm is the one where a
+counterexample, if it exists, is most likely to sit just past the reachable order; a
+slack arm is one where a counterexample would have to be structurally different from
+anything the search is producing. Run 2 should spend on 19 and 40 before 100.
+
+**The arms were killed** after n = 14 in line with the run's own bandit rule: no arm's
+objective moved above 0, the tight/slack split had already been measured, and the cores
+were worth more to the frozen-checker re-verification of the n <= 10 and girth >= 6 sweeps.
+Three arms (141, 160, 198a, 291, 314) had not yet run when the arms were killed; their
+exhaustive results already cover the same range, so nothing was lost that the exhaustive
+sweeps had not already settled.
