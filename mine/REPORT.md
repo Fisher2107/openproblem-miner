@@ -37,9 +37,11 @@ Regenerate with `python3 mine/tools/yield_table.py`.
 | files hash-locked in the verifier | 40 | `mine/verify/FREEZE.sha256` |
 | verifier self-tests passing (both directions) | 71 | `bash mine/verify/run-tests.sh` |
 | graph-conjecture evaluations, exhaustive | **50,008,908** | §4, table below |
-| problems with an attack log | **see `python3 mine/tools/yield_table.py`** | `mine/attacks/*/log.md` |
+| problems with an attack log | **36** (A: 27, C: 7, D: 2, **B: 0**) | `mine/attacks/*/log.md` |
+| failed ansatz families recorded | 31 | `mine/memory/negative.jsonl` |
 | candidates reaching T1 | 0 (new) / 1 (positive control) | §5 |
 | **T3-verified new results** | **0** | — |
+| T3 demonstrated on a positive control | 1 | `mine/attacks/t3-positive-control/`, axioms `[propext, Quot.sound]` |
 | cost per verified result | undefined (no results) | — |
 
 ### Corpus by cluster

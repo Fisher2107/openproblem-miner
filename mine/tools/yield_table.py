@@ -47,13 +47,24 @@ WOWII_OPEN = ["wow2-19", "wow2-40", "wow2-61", "wow2-100", "wow2-133",
 checkers = sorted(f for f in os.listdir("mine/verify/checkers") if f.endswith(".py"))
 freeze = open("mine/verify/FREEZE.sha256").read().strip().split("\n") if os.path.exists("mine/verify/FREEZE.sha256") else []
 
-neg = []
-for fn in sorted(os.listdir("mine/memory")):
-    if fn.endswith(".jsonl"):
-        neg += jsonl("mine/memory/" + fn)
+# negative.jsonl is the merged file; the per-agent negative-*.jsonl files are its inputs,
+# so counting both would double-count.
+neg = jsonl("mine/memory/negative.jsonl")
 
 results = [d for d in sorted(os.listdir("mine/results"))
            if os.path.isdir(os.path.join("mine/results", d))]
+
+# attacked problems, broken down by the class the triage assigned them
+by_id = {r.get("id"): r for r in problems}
+attacked_ids = sorted(set(problem_dirs) | set(WOWII_OPEN))
+attack_classes = collections.Counter()
+unmatched = []
+for a in attacked_ids:
+    r = by_id.get(a)
+    if r:
+        attack_classes[r.get("class")] += 1
+    else:
+        unmatched.append(a)
 
 report = {
     "corpus": {
@@ -74,6 +85,8 @@ report = {
         "problems_attacked_count": len(set(problem_dirs) | set(WOWII_OPEN)),
         "wave_dirs": wave_dirs,
         "negative_memory_entries": len(neg),
+        "attacked_by_class": dict(attack_classes),
+        "attacked_not_matched_to_a_corpus_row": unmatched,
     },
     "results_shipped": results,
 }
