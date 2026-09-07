@@ -575,5 +575,17 @@ theorem no_ham_path : ¬ ∃ l : List Nat, IsHamPath l := by
   have e8 := deg_one_endpoint (uniq_nbr (v := 8) (w := 2) (by decide)) l hc hn (hall 8 (by omega))
   have e9 := deg_one_endpoint (uniq_nbr (v := 9) (w := 3) (by decide)) l hc hn (hall 9 (by omega))
   have e10 := deg_one_endpoint (uniq_nbr (v := 10) (w := 4) (by decide)) l hc hn (hall 10 (by omega))
-  -- three vertices of degree 1, but only two endpoints
-  rcases e8 with a | a <;> rcases e9 with b | b <;> rcases e10 with c | c <;> simp_all
+  -- three vertices of degree 1, but a path has only two endpoints
+  have key : ∀ (o : Option Nat) (p q : Nat), o = some p → o = some q → p = q := by
+    intro o p q h1 h2
+    rw [h1] at h2
+    exact (Option.some.inj h2).symm
+  rcases e8 with a | a <;> rcases e9 with b | b <;> rcases e10 with c | c
+  · exact absurd (key _ _ _ a b) (by decide)
+  · exact absurd (key _ _ _ a b) (by decide)
+  · exact absurd (key _ _ _ a c) (by decide)
+  · exact absurd (key _ _ _ b c) (by decide)
+  · exact absurd (key _ _ _ b c) (by decide)
+  · exact absurd (key _ _ _ a c) (by decide)
+  · exact absurd (key _ _ _ a b) (by decide)
+  · exact absurd (key _ _ _ a b) (by decide)
