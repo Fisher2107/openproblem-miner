@@ -1,0 +1,35 @@
+=== check-freeze.sh ===
+VERIFIER INTACT (40 files)
+
+=== rung1: known record reconstruction, n=42 ===
+$ python3 mine/verify/checkers/check_ramsey_lower.py mine/attacks/bound-ramsey-R5-5/rung1_known_n42.json
+NOTE: this certifies R(5,5) > 42. The published lower bound supplied with the witness is 43, so this witness does not beat the record.
+{
+  "edges": "425",
+  "found_K5": "None",
+  "found_independent_5": "None",
+  "n": "42",
+  "s": "5",
+  "t": "5"
+}
+statement side A: clique of order 5: none
+statement side B: independent set of order 5: none
+ACCEPT: the conjecture's conclusion FAILS on this witness while its hypotheses HOLD -- this is a counterexample.
+EXIT=0
+
+=== rung2: circulant SA at n=42 (sanity) and n=43 (target) ===
+No zero-objective witness was ever produced (best objective at n=42: 168; best at n=43: 387,
+both nonzero), so no witness JSON was written by anneal_circulant.py (it only writes output
+on best_obj==0 or at the very end of all restarts, which the 300s wall-clock timeout cut off
+before completion) and nothing further was submitted to the frozen checker for rung 2 --
+submitting a graph already known to contain a K5 or an independent 5-set would not be informative.
+Full SA logs: sa_n42_long.log, sa_n43_long.log (this directory).
+
+=== rung3: SAT ===
+Not attempted for R(5,5): n=43 gives C(43,2)=903 variables, C(43,5)+C(43,5)=2*962598=1,925,196
+clauses of length C(5,2)=10 each -- comparable size to the R(4,6) n=36 encoding, which itself did
+not reach a solve verdict within the available wall-clock budget (see bound-ramsey-R4-6/checker-output.txt).
+Given R(5,5) is independently documented (mine/logs/harvest-h4.md, and the corpus entry itself) as
+having already absorbed ~80 CPU-years of dedicated SAT search to move its UPPER bound, and this arm's
+remaining budget was under 10 minutes, launching an under-resourced SAT attempt here would not have
+produced a decided result and was skipped rather than left to run unobserved.
