@@ -415,10 +415,10 @@ theorem subNbhd_iff (v m : Nat) : SubNbhd v m ↔ subNbhdB v m = true := by
   constructor
   · intro h u hu
     cases hb : m.testBit u with
-    | false => simp [hb]
+    | false => simp
     | true =>
       have hA := (adj_iff v u).1 (h u hu hb)
-      simp [hb, hA]
+      simp [hA]
   · intro h u hu hm
     have hb := h u hu
     rw [InMask] at hm
@@ -433,13 +433,13 @@ theorem indep_iff (m : Nat) : Indep m ↔ indepB m = true := by
     rw [allBelow_iff]
     intro w hw
     cases hbu : m.testBit u with
-    | false => simp [hbu]
+    | false => simp
     | true =>
       cases hbw : m.testBit w with
-      | false => simp [hbw]
+      | false => simp
       | true =>
         cases hEq : decide (u = w) with
-        | true => simp [hEq]
+        | true => simp
         | false =>
           have hne : u ≠ w := by simpa using hEq
           have hnot := h u w hu hw hbu hbw hne
