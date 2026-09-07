@@ -32,6 +32,11 @@ RUN1 = {
 GRAPH_SHAPE = re.compile(r"\b(graph|graphs|digraph|tree|colou?ring|spanning|vertex|vertices|edge)\b", re.I)
 SWEPT = re.compile(r"exhaustive|verified up to|checked for all|computer search|brute[- ]force|geng", re.I)
 ARITH = re.compile(r"\b(integers?|n!|prime|factorial|diophantine|digits?)\b", re.I)
+# Targets whose natural method is semidefinite programming or continuous optimisation.
+# Agent H4 called these out as the wrong tool class before any compute was spent, and it
+# was right; no SDP solver could be installed here, so they are not run-2 targets either
+# unless the toolchain question is solved first.
+SDP_SHAPED = re.compile(r"\b(kissing number|sphere pack|packing density|lattice|spherical code|Tur[aá]n density|semidefinite)\b", re.I)
 
 def score(r):
     s, why = float(r.get("tractability") or 0), []
@@ -45,6 +50,8 @@ def score(r):
         s -= 2.5; why.append("evidence of a published exhaustive sweep at or beyond our reach")
     if ARITH.search(nl) and r.get("class") == "A":
         s -= 3.0; why.append("unbounded arithmetic witness: published frontiers are many orders of magnitude ahead")
+    if SDP_SHAPED.search(nl):
+        s -= 3.0; why.append("wrong tool class: needs SDP/continuous optimisation, which this toolchain lacks")
     if r.get("class") == "B":
         s -= 2.0; why.append("class B needs a Groebner/SDP toolchain this environment could not install")
     if r.get("statement_formal"):
