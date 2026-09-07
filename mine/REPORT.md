@@ -146,8 +146,19 @@ and 200), reproducing their published invariant values exactly. A checker whose 
 has never fired is not a validated checker.
 
 `bash mine/verify/run-tests.sh` → 71 checks, 0 failures. `bash scripts/check-freeze.sh` →
-`VERIFIER INTACT (40 files)`. **The freeze was never reopened.** Two moments where it would
-have helped are recorded in §7 as costs, not repaired.
+`VERIFIER INTACT (40 files)`. **The freeze was never reopened.** Three moments where
+reopening it would have helped — the four Class A graph conjectures that arrived after the
+freeze, the multi-colour Ramsey arm, and the weak Schur arm — are recorded in §7 as costs,
+not repaired.
+
+Worth recording about the validation itself: **two of the five reference-graph expectations
+were wrong, and the library was right.** The hand-written table said K3,3 has a longest
+induced path on 4 vertices and residue 3; the library computed 3 and 2. An independent
+permutation-based enumeration of induced paths (written from the Lean `isInducedPath`
+definition rather than from the library's characterisation) and a hand-traced
+Havel–Hakimi reduction both sided with the library. The expectations were corrected. This
+is the whole reason for testing against values computed a different way: the first thing
+the suite caught was its author.
 
 ---
 
