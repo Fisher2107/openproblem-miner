@@ -44,9 +44,9 @@ forty before freezing** -- run 1's largest process error was freezing mid-harves
 | 35 | `bound-ramsey-R444` | A | 6.5 | The 3-colour diagonal Ramsey number R(4,4,4) is the smallest n such that every 3-colouring of the edges of K_n | witness is a graph: nauty makes our frontier concrete and extendable |
 | 36 | `erdos-0107` | A | 6.5 | Let f(n) be minimal such that any f(n) points in ℝ^2, no three on a line, contain n points which form the vert | witness is a graph: nauty makes our frontier concrete and extendable; Lean statement already exists, so T3 is cheaper |
 | 37 | `erdos-0647-a` | A | 6.5 | Let τ(n) count the number of divisors of n. Is there some n > 24 such that max_{m < n}(m + τ(m)) ≤ n + 2? | Lean statement already exists, so T3 is cheaper |
-| 38 | `bound-kissing-d10` | A | 6.0 | The kissing number K(10) is the maximum number of non-overlapping unit spheres that can simultaneously touch a | top of the re-scored corpus |
-| 39 | `bound-kissing-d11` | A | 6.0 | The kissing number K(11) is the maximum number of non-overlapping unit spheres that can simultaneously touch a | top of the re-scored corpus |
-| 40 | `bound-kissing-d12` | A | 6.0 | The kissing number K(12) is the maximum number of non-overlapping unit spheres that can simultaneously touch a | top of the re-scored corpus |
+| 38 | `erdos-0007` | A | 6.0 | Is there a covering system all of whose moduli are odd (and greater than 1)? | Lean statement already exists, so T3 is cheaper |
+| 39 | `erdos-0097-a` | A | 6.0 | Does every convex polygon have a vertex with no other 4 vertices equidistant from it?  [Definitions used in th | witness is a graph: nauty makes our frontier concrete and extendable; Lean statement already exists, so T3 is cheaper |
+| 40 | `erdos-0172` | C | 6.0 | Is it true that in any finite colouring of ℕ there exist arbitrarily large finite A such that all sums and pro | Lean statement already exists, so T3 is cheaper |
 
 ## The ten run-1 arms and exactly where each stopped
 
