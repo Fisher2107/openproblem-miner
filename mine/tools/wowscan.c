@@ -238,6 +238,43 @@ static int minimal_tds_differ(void) {           /* are there two minimal TDS of 
     return 0;
 }
 
+/* ---- extra Class A targets attacked directly in wave 3 (see mine/attacks/) ---- */
+
+/* Does G contain a cycle of length exactly L? DP over (subset, endpoint), anchored at the
+   lowest vertex of the subset so each cycle is counted from one canonical start. */
+static int has_cycle_len(int L) {
+    if (L < 3 || L > N) return 0;
+    static unsigned char reach[1 << 20][20];
+    int sz = 1 << N, S, v, u;
+    for (S = 0; S < sz; S++) for (v = 0; v < N; v++) reach[S][v] = 0;
+    for (v = 0; v < N; v++) reach[1 << v][v] = 1;
+    for (S = 1; S < sz; S++) {
+        int anchor = low((U)S);
+        if (pc((U)S) > L) continue;
+        for (v = 0; v < N; v++) {
+            if (!reach[S][v]) continue;
+            if (pc((U)S) == L && (adj[v] >> anchor & 1) && v != anchor) return 1;
+            U nb = adj[v] & ~(U)S;
+            while (nb) { u = low(nb); nb &= nb - 1;
+                if (u < anchor) continue;              /* keep the anchor lowest */
+                reach[S | (1 << u)][u] = 1; }
+        }
+    }
+    return 0;
+}
+
+/* max cut by exhaustive bipartition (n <= 20) */
+static int max_cut(void) {
+    int sz = 1 << N, S, best = 0;
+    for (S = 0; S < sz / 2; S++) {
+        int c = 0; U A = (U)S;
+        U a = A;
+        while (a) { int v = low(a); a &= a - 1; c += pc(adj[v] & ~A); }
+        if (c > best) best = c;
+    }
+    return best;
+}
+
 static void emit(const char *id, const char *g6) { printf("%s %s\n", id, g6); emitted++; }
 
 static int dump_mode = 0;
@@ -274,6 +311,8 @@ int main(int argc, char **argv) {
         int girth = girth_of();
 
         if (dump_mode) {
+            printf("%s cyc4=%d cyc5=%d cyc6=%d cyc8=%d maxcut=%d ", line,
+                has_cycle_len(4), has_cycle_len(5), has_cycle_len(6), has_cycle_len(8), max_cut());
             printf("%s n=%d alpha=%d maxL=%d sumL=%d maxT=%d minT=%d freqT=%d cC4=%d "
                    "diam=%d rad=%d sumEcc=%d girth=%d Ls=%d f=%d b=%d tree=%d path=%d "
                    "gt=%d res=%d hh=%d ham=%d mtdsdiff=%d\n",
@@ -347,6 +386,30 @@ int main(int argc, char **argv) {
         if (want[314] && maxT == 0 && diam <= 3) {
             if (path_induced() <= 4 && minimal_tds_differ()) emit("wow2-314", line);
         }
+        /* ---- graffiti-3: alpha(G) >= rad(G) for connected G. Cheap, exact. ---- */
+        if (want[900] && alpha < rad) emit("graffiti-3", line);
+
+        /* ---- erdos-0064: every graph of min degree >= 3 has a cycle of length 2^k, k>=2.
+                A counterexample has min degree >= 3 and no cycle of length 4, 8, 16, ... ---- */
+        if (want[901]) {
+            int mind = N, i2;
+            for (i2 = 0; i2 < N; i2++) { int d = pc(adj[i2]); if (d < mind) mind = d; }
+            if (mind >= 3) {
+                int L, bad = 0;
+                for (L = 4; L <= N; L *= 2) if (has_cycle_len(L)) { bad = 1; break; }
+                if (!bad) emit("erdos-0064", line);
+            }
+        }
+
+        /* ---- erdos-0023: every triangle-free graph on 5k vertices can be made bipartite
+                by deleting at most k^2 edges. Violation: m - maxcut > k^2. ---- */
+        if (want[902] && maxT == 0 && N % 5 == 0) {
+            int k = N / 5, m = 0, i3;
+            for (i3 = 0; i3 < N; i3++) m += pc(adj[i3]);
+            m /= 2;
+            if (m - max_cut() > k * k) emit("erdos-0023", line);
+        }
+
         /* ---- 40: ceil((p+b+1)/2) <= f.  No cheap necessary condition is available
                  (f and b are both needed), so this one is computed exactly and is the
                  expensive arm; it is gated by --only in practice. */

@@ -22,7 +22,7 @@ bad, checked = [], 0
 for line in dump:
     parts = line.split()
     g6 = parts[0]
-    c = dict(p.split("=") for p in parts[1:])
+    c = dict(p.split("=") for p in parts[1:] if "=" in p)
     N, adj = E.decode_graph6(g6)
     lv = [E.indep_neighbors_card(N, adj, v) for v in range(N)]
     tri = [E.num_triangles_at_vertex(N, adj, v) for v in range(N)]
