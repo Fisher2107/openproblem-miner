@@ -24,8 +24,9 @@ planarity and 3-connectivity filters, then a backtracking Hamiltonian-cycle sear
 | 18 | 149 | 2 | 0 |
 | 20 | 703 | 8 | 0 |
 | 22 | 4,132 | 8 | 0 |
+| 24 | 29,579 | 32 | 0 |
 
-**Verdict.** The conjecture holds for every member of its class on at most 22 vertices.
+**Verdict.** The conjecture holds for every member of its class on at most 24 vertices. (An n = 26 run was started and killed to free cores for the frozen-checker re-verification of the run's headline negative.)
 Barnette's conjecture has been verified far beyond this in the literature (into the sixties
 of vertices), so again this reproduces known ground.
 
@@ -35,4 +36,4 @@ furthest — this one and WOWII 141 — both got there by enumerating a class th
 own hypotheses cut down, rather than by enumerating graphs and filtering afterwards. That
 should be the default attack shape in run 2.
 
-**Reproduce.** `python3 mine/attacks/wiki-barnettes-conjecture/attack.py 8 22`
+**Reproduce.** `python3 mine/attacks/wiki-barnettes-conjecture/attack.py 8 24`

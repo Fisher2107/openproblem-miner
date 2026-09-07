@@ -100,18 +100,28 @@ theorem anyBelow_iff (f : Nat → Bool) (n : Nat) :
 def rowMask (u : Nat) : Nat :=
   [252, 252, 379, 631, 1135, 31, 31, 3, 4, 8, 16].getD u 0
 
-/-- Adjacency in G. -/
-def Adj (u v : Nat) : Prop := u < 11 ∧ v < 11 ∧ (rowMask u).testBit v = true
+/-- Adjacency in the finite graph on vertex set `{0,…,n-1}` whose adjacency table is
+`adj`.  This is the *general* notion, used in §10 to state the conjecture itself; the
+graph G of this file is the instance `n = 11`, `adj = adjB`. -/
+def GAdj (n : Nat) (adj : Nat → Nat → Bool) (u v : Nat) : Prop :=
+  u < n ∧ v < n ∧ adj u v = true
 
-/-- Boolean version of `Adj`. -/
+/-- The adjacency table of G. -/
 def adjB (u v : Nat) : Bool :=
   decide (u < 11) && decide (v < 11) && (rowMask u).testBit v
 
-instance instDecAdj (u v : Nat) : Decidable (Adj u v) :=
-  inferInstanceAs (Decidable (u < 11 ∧ v < 11 ∧ (rowMask u).testBit v = true))
+/-- Adjacency in G. -/
+def Adj (u v : Nat) : Prop := GAdj 11 adjB u v
 
-theorem adj_iff (u v : Nat) : Adj u v ↔ adjB u v = true := by
-  simp [Adj, adjB, and_assoc]
+instance instDecAdj (u v : Nat) : Decidable (Adj u v) :=
+  inferInstanceAs (Decidable (u < 11 ∧ v < 11 ∧ adjB u v = true))
+
+theorem adjB_lt {u v : Nat} (h : adjB u v = true) : u < 11 ∧ v < 11 := by
+  rw [adjB, Bool.and_eq_true, Bool.and_eq_true] at h
+  exact ⟨by simpa using h.1.1, by simpa using h.1.2⟩
+
+theorem adj_iff (u v : Nat) : Adj u v ↔ adjB u v = true :=
+  ⟨fun h => h.2.2, fun h => ⟨(adjB_lt h).1, (adjB_lt h).2, h⟩⟩
 
 /-- The adjacency matrix exactly as `nauty-listg -a` prints it for `J^~~u?_C?O?`. -/
 def listgRow (u : Nat) : List Nat :=
