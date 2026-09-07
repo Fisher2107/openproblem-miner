@@ -15,6 +15,7 @@ the object. Graph, in graph6: `J^~~u?_C?O?` (11 vertices, 24 edges).
 |---|---|
 | `Conj200Control.lean` | the whole proof, self-contained, no imports (695 lines) |
 | `build.txt` | exact commands + full output + timing, including `#print axioms` |
+| `tree_number_crosscheck.py` | external (non-Lean) cross-check of the one unformalised step, gap M1 below |
 | `log.md` | this file |
 
 Reproduce:
@@ -104,6 +105,22 @@ Direction by direction:
   vertices is simultaneously connected and of edge count |V| − 1. If the classical
   equivalence somehow failed, an induced tree with a different edge count could slip
   through. It cannot, classically — but the step is not machine-checked.
+
+**External cross-check of exactly this gap** (T1-level, outside Lean):
+`tree_number_crosscheck.py` recomputes tree(G) under the literal definition — acyclicity by
+repeated leaf-stripping, which empties a graph iff it is a forest — and compares the two
+families of induced trees.
+
+```
+$ python3 tree_number_crosscheck.py
+tree(G), literal 'connected and acyclic' : 4
+tree(G), 'connected and |E| = |V| - 1'   : 4
+the two families of induced trees agree  : True (91 induced trees)
+witness 225 = {0,5,6,7} is acyclic       : True
+```
+
+So for *this* graph the substitution provably changes nothing — but that check runs in
+Python, not in the Lean kernel, so gap M1 stands as an unformalised step in the T3 witness.
 
 Why I did not do it literally: proving "no cycle exists" needs cycle-as-list machinery plus
 a pigeonhole argument for `Nodup` lists over an 11-element vertex set, or (for the upper
