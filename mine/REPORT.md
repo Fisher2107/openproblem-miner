@@ -24,7 +24,7 @@ Regenerate with `python3 mine/tools/yield_table.py`.
 | frozen checkers written and validated | 15 | `mine/verify/checkers/` |
 | files hash-locked in the verifier | 40 | `mine/verify/FREEZE.sha256` |
 | verifier self-tests passing (both directions) | 71 | `bash mine/verify/run-tests.sh` |
-| graph-conjecture evaluations, exhaustive | **49,498,419** | §4, table below |
+| graph-conjecture evaluations, exhaustive | **50,008,908** | §4, table below |
 | problems with an attack log | **see `python3 mine/tools/yield_table.py`** | `mine/attacks/*/log.md` |
 | candidates reaching T1 | 0 (new) / 1 (positive control) | §5 |
 | **T3-verified new results** | **0** | — |
@@ -166,11 +166,11 @@ are per-conjecture.
 | conjecture 141, all girth >= 5 graphs, n = 11..16 | 20,147,011 |
 | graffiti-3 (`alpha >= rad`), all connected graphs n <= 10 | 11,989,762 |
 | erdos-0064 (min degree >= 3, power-of-two cycle), n <= 10 | 5,290,114 |
-| Erdős–Gyárfás (cubic, power-of-two cycle), n <= 18 | 45,981 |
+| Erdős–Gyárfás (cubic, power-of-two cycle), n <= 20 | 556,470 |
 | erdos-0023 (triangle-free, make bipartite), n = 5, 10 | 9,838 |
 | generator families 1 and 2 | 20,908 |
 | Barnette (cubic bipartite), n <= 22 | 5,043 |
-| **total** | **49,498,419** |
+| **total** | **50,008,908** |
 
 ### 4.2 The screener is trustworthy, and that was checked
 
@@ -228,7 +228,7 @@ sharing a misreading, and it was run blind, exactly as specified.
 
 | target | how close | the obstacle |
 |---|---|---|
-| Erdős–Gyárfás (cubic case of Erdős 64) | exhausted over all connected cubic graphs to n = 18 | witnesses must dodge every power of two at once; small cubic graphs are cycle-rich |
+| Erdős–Gyárfás (cubic case of Erdős 64) | exhausted over all connected cubic graphs to n = 20 | witnesses must dodge every power of two at once; small cubic graphs are cycle-rich |
 | Barnette's conjecture | exhausted the whole class to n = 20 — only 8 graphs at n = 20 are 3-connected cubic bipartite planar | the class is tiny, so the reachable n is large; the literature is already far ahead |
 | WOWII 19 | objective reached **0** (the inequality is tight — equality is achieved) at n = 11, 12 and 13, but never negative | the bound appears to be sharp rather than false; equality cases are common, violations absent |
 | WOWII 141 | exhausted to n = 16 | none — this is a clean negative, and the girth argument makes larger n cheap; n = 17–18 is a few more core-hours |
