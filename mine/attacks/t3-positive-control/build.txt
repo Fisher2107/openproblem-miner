@@ -35,3 +35,16 @@ exit=1 (1 = no matches)
 --- BUILD -----------------------------------------------------------------
 $ cd /home/user/openproblem-miner/mine/attacks/t3-positive-control
 $ time lean Conj200Control.lean
+'conj200_counterexample' depends on axioms: [propext, Quot.sound]
+'G_connected' depends on axioms: [propext]
+'G_treeNumber' depends on axioms: [propext, Quot.sound]
+'no_ham_path' depends on axioms: [propext, Quot.sound]
+'adj_matches_listg' depends on axioms: [propext]
+
+real	0m45.594s
+user	0m23.680s
+sys	0m6.400s
+
+(the five lines above are the output of the #print axioms commands at the end of the file:
+ no sorryAx  =>  no sorry anywhere in the dependency graph;
+ no ofReduceBool  =>  native_decide was not used; every computation was done by the kernel.)

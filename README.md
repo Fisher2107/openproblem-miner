@@ -17,6 +17,23 @@ that are widely believed but were never seriously attacked *from below* are syst
 under-searched. Falsification is far cheaper than proof, and a counterexample is often a
 small finite object. That gap is the ore body.
 
+## Run 1 outcome (2026-09-06)
+
+**Zero new results, reported as zero.** `mine/REPORT.md` is the full account; the short
+version:
+
+- **1,541 problems** harvested and triaged, every one citing a cloned file or a search
+  result — none resting on model memory.
+- A **frozen verifier** (40 files, 71 passing checks, validated against two *published*
+  counterexamples before the freeze) that was never reopened, and that **caught a false
+  witness** produced by a buggy search script.
+- **50 million** exhaustive graph-conjecture evaluations. One negative that appears to be
+  new: Written on the Wall II conjecture 141 holds for every connected graph on at most
+  16 vertices.
+- The most valuable output is the **calibration** section: six triage predictions that were
+  wrong, and the rule that replaces them — schedule on how restrictive a conjecture's
+  hypotheses are, not on how tractable its statement looks.
+
 ## How it works
 
 1. **Harvest** — six parallel subagents scrape pre-registered open problems: the Erdős
