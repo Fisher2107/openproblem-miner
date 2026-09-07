@@ -1,0 +1,39 @@
+=== check-freeze.sh ===
+VERIFIER INTACT (40 files)
+
+=== rung1: known record reconstruction, n=35 ===
+$ python3 mine/verify/checkers/check_ramsey_lower.py mine/attacks/bound-ramsey-R4-6/rung1_known_n35.json
+NOTE: this certifies R(4,6) > 35. The published lower bound supplied with the witness is 36, so this witness does not beat the record.
+{
+  "edges": "248",
+  "found_K4": "None",
+  "found_independent_6": "None",
+  "n": "35",
+  "s": "4",
+  "t": "6"
+}
+statement side A: clique of order 4: none
+statement side B: independent set of order 6: none
+ACCEPT: the conjecture's conclusion FAILS on this witness while its hypotheses HOLD -- this is a counterexample.
+EXIT=0
+
+=== rung2: best circulant SA witness at n=36 (objective=108, i.e. NOT a valid Ramsey witness -- run for honesty) ===
+$ python3 mine/verify/checkers/check_ramsey_lower.py mine/attacks/bound-ramsey-R4-6/rung2_best_n36.json
+{
+  "edges": "288",
+  "found_K4": "[0, 1, 11, 12]",
+  "found_independent_6": "None",
+  "n": "36",
+  "s": "4",
+  "t": "6"
+}
+statement side A: clique of order 4: (0, 1, 11, 12)
+statement side B: independent set of order 6: none
+REJECT: the conjecture holds on this witness (or its hypotheses do not apply).
+EXIT=1
+
+=== rung3: SAT encoding at n=36 (630 vars, 2006697 clauses); solve attempted with 150s budget under a 200s hard wall-clock kill ===
+$ python3 mine/attacks/bound-ramsey-R4-6/sat_encode.py 4 6 36 150
+nvars=630 nclauses=2006697 (K4-clauses gen in 0.22s, I6-clauses gen in 15.15s)
+total build wall time: 15.39s
+(process killed by the outer 200s hard timeout before the 150s in-script solve timeout printed a verdict -- no SAT/UNSAT/timeout result was obtained; only the encoding size and build time are confirmed)
