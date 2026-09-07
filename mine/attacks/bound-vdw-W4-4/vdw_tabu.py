@@ -112,6 +112,21 @@ def run(k, r, n, seconds, seed=0):
             conflicts = sum(mono)
             stall = 0
 
+    # Independent from-scratch recheck (do not trust the incremental tracker alone --
+    # the sibling schur_tabu.py had a real double-counting bug caught this way).
+    if best_conflicts == 0:
+        full_col = [None] + best_col
+        real_conflicts = 0
+        for terms in aps:
+            c0 = full_col[terms[0]]
+            if all(full_col[t] == c0 for t in terms[1:]):
+                real_conflicts += 1
+        if real_conflicts != 0:
+            print("INTERNAL BUG: incremental tracker said 0 but full recheck found %d "
+                  "monochromatic APs -- discarding this witness" % real_conflicts,
+                  file=sys.stderr)
+            best_conflicts = real_conflicts
+
     return best_conflicts, best_col[1:]
 
 if __name__ == "__main__":

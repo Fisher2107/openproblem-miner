@@ -75,9 +75,12 @@ Encoding size at n=36: **630 variables, 2,006,697 clauses** (58,905 K4-clauses +
 I6-clauses), built in ~15-18s wall time in Python -- confirms the corpus entry's own
 sizing estimate was in the right ballpark.
 
-Solve attempt: `python3 sat_encode.py 4 6 36 150` (150s solve-time budget) using
-`pysat.solvers.Cadical153`, run under a hard timeout. See `checker-output.txt` /
-`sat_n36_run.log` for the literal result of that run.
+Solve attempt: `python3 sat_encode.py 4 6 36 150` (150s in-script solve-time budget) using
+`pysat.solvers.Cadical153`, wrapped in an outer 200s hard wall-clock timeout. The outer
+timeout fired first (process killed, exit 143) before the solver printed SAT/UNSAT/timeout
+-- **no decided result was obtained**. Only the encoding size (630 vars, 2,006,697 clauses)
+and build time (~15.4s) are confirmed; the solve itself is an open, unexecuted question
+against this budget, not a result. See `checker-output.txt` / `sat_n36_run.log`.
 
 ## Ladder rung reached
 
@@ -87,13 +90,22 @@ Rung 1 (known record reconstructed) -> Rung 2 (circulant SA, flat, best 108) -> 
 ## Honest verdict
 
 The frozen checker accepted only the rung-1 reconstruction of the *existing* record
-(n=35); it did not accept anything at n=36 -- no zero-objective witness was ever produced
-at n=36, so nothing was submitted to the checker there (submitting a non-zero-objective
-graph would just be re-demonstrating a K4 or I6 exists, which is not informative). See
-`checker-output.txt` for the literal commands/outputs. Rung 2 (circulant SA) plateaus at
-best_obj ~108-504 depending on restart/seed, an order of magnitude away from 0, and the
-known record itself is provably non-circulant (irregular degree sequence), so circulant
-search was always attacking a strictly harder sub-problem than "any graph". Rung 3 (SAT)
-is sized realistically (2M clauses, ~15s to build) but whether it decides within a
-reasonable time budget is reported in `sat_n36_run.log` / `checker-output.txt`, not
-assumed here.
+(n=35, exit 0). At n=36 the checker was run once more, against the best circulant-SA
+witness (objective 108, i.e. still contains monochromatic structures) purely to record the
+honest rejection: exit 1, `found_K4: [0, 1, 11, 12]`. No zero-objective witness was ever
+produced at n=36. See `checker-output.txt` for both literal commands/outputs. Rung 2
+(circulant SA) plateaus at best_obj 108-504 depending on restart/seed (best overall: 108),
+an order of magnitude away from 0, and the known record itself is provably non-circulant
+(irregular degree sequence [12,13,14,15]), so circulant search was always attacking a
+strictly harder sub-problem than "any graph on 36 vertices". Rung 3 (SAT) is sized
+realistically (2,006,697 clauses, ~15.4s to build) but the solve itself hit the outer
+wall-clock limit before returning SAT/UNSAT/timeout -- that result is simply not known.
+
+**Summary**: best n reached = 36 (target, no witness found there); published lower bound =
+36 (i.e. R(4,6) > 35 already known, corresponding to R(4,6) >= 36); ladder rung reached =
+3 (SAT), but rung 3 did not complete a solve; the frozen checker accepted the rung-1
+reconstruction (n=35) and correctly rejected the best rung-2 attempt at n=36. Arm stopped
+because (a) circulant SA was flat well above 0 across every restart and every seed tried,
+and (b) the SAT encoding, while successfully built, did not finish solving inside the
+remaining wall-clock budget -- both are genuine resource limits, not a decided negative
+about R(4,6) at n=36.

@@ -77,3 +77,21 @@ open conjectures within n <= 18. That is a real, if narrow, negative: it says th
 have no counterexample of the "dense core + apexes + pendants" shape at that size. It says
 nothing about other shapes, and the parameter grid is small — 13,448 graphs is a rounding
 error next to the space of graphs on 18 vertices.
+
+## A second generator family — and why its negative is worth less
+
+`mine/tools/genfamilies2.py` widens the program space along the axes the first generator
+leaves out: attachments that are paths of length 2 rather than single pendants, two cores
+joined by an edge or a path (the objectives involve radius and diameter, which a single
+dense core keeps artificially small), complete-bipartite and cycle cores. 7,460 distinct
+graphs with n <= 18.
+
+Result against the ten open conjectures: **0 candidates**.
+
+But this generator **does not pass the positive control** — neither the conjecture-194 nor
+the conjecture-200 counterexample lies in its parameter grid. So unlike the first
+generator, a negative from this one is only weak evidence: it shows nothing was found, not
+that something findable would have been found. Recorded here rather than presented
+alongside the validated negative, because the difference between "searched and found
+nothing" and "searched with an instrument known to detect this kind of thing and found
+nothing" is the whole difference between a measurement and a guess.

@@ -81,7 +81,7 @@ def sweep(n_max, tol=1e-6):
 
 
 if __name__ == "__main__":
-    N_MAX = 9  # bump to 10 separately if time allows (2.9M graphs at n=10)
+    N_MAX = 10  # n=10 alone is 2.9M K4-free graphs, ~188s on top of the ~5s for n<=9
     total, violations, worst_margin, wall = sweep(N_MAX)
     print(f"\nTotal K4-free graphs checked (n=1..{N_MAX}, K_3 excluded): {total}")
     print(f"wall={wall:.1f}s")
