@@ -31,11 +31,13 @@ if not lines:
 tot = sum(int(re.search(r"scanned (\d+)", l).group(1)) for l in lines)
 maxe = max(int(re.search(r"edges=(\d+)", l).group(1)) for l in lines)
 cands = sum(int(re.search(r"emitted (\d+)", l).group(1)) for l in lines)
-done = "N11 SLICED SWEEP COMPLETE" in open(LOG).read()
+text = open(LOG).read()
+done = "N11 SLICED SWEEP COMPLETE" in text
+stopped = "N11 SLICED SWEEP STOPPED" in text
 grand = sum(OTHER.values()) + tot
 
 s = open(REPORT).read()
-status = "complete" if done else "still running"
+status = "complete" if done else ("stopped partway, by choice" if stopped else "still running")
 s = re.sub(r"\| exhaustive n = 11, cheap arms, sliced by edge count \([^)]*\) \| [0-9,]+ graphs[^|]*\| \d+ \|",
            "| exhaustive n = 11, cheap arms, sliced by edge count (%s) | %s graphs — every connected graph on 11 vertices with at most %d edges | %d |"
            % (status, format(tot, ","), maxe, cands), s)
