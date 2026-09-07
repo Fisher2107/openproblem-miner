@@ -24,7 +24,8 @@ Regenerate with `python3 mine/tools/yield_table.py`.
 | frozen checkers written and validated | 15 | `mine/verify/checkers/` |
 | files hash-locked in the verifier | 40 | `mine/verify/FREEZE.sha256` |
 | verifier self-tests passing (both directions) | 71 | `bash mine/verify/run-tests.sh` |
-| graphs exhaustively searched | **> 32 million** | §4 |
+| graph-conjecture evaluations, exhaustive | **49,498,419** | §4, table below |
+| problems with an attack log | **see `python3 mine/tools/yield_table.py`** | `mine/attacks/*/log.md` |
 | candidates reaching T1 | 0 (new) / 1 (positive control) | §5 |
 | **T3-verified new results** | **0** | — |
 | cost per verified result | undefined (no results) | — |
@@ -129,6 +130,24 @@ max_v l(v) + 1` always (a vertex plus a maximum independent subset of its neighb
 induces a star), so a violation forces girth ≥ 6 — and graphs of girth ≥ 5 are rare enough
 that geng can enumerate all 17.7 million of them at n = 16 in minutes. Every gate in the
 screener is a necessary condition of this kind; they are listed and justified in the wave-1 log.
+
+### 4.1b Every exhaustive sweep in the run
+
+"Graph-conjecture evaluation" = one graph tested against one conjecture's full predicate.
+The same graph tested for two conjectures counts twice, because the cost and the evidence
+are per-conjecture.
+
+| sweep | graphs |
+|---|---|
+| all connected graphs n <= 10, all ten WOWII conjectures | 11,989,762 |
+| conjecture 141, all girth >= 5 graphs, n = 11..16 | 20,147,011 |
+| graffiti-3 (`alpha >= rad`), all connected graphs n <= 10 | 11,989,762 |
+| erdos-0064 (min degree >= 3, power-of-two cycle), n <= 10 | 5,290,114 |
+| Erdős–Gyárfás (cubic, power-of-two cycle), n <= 18 | 45,981 |
+| erdos-0023 (triangle-free, make bipartite), n = 5, 10 | 9,838 |
+| generator families 1 and 2 | 20,908 |
+| Barnette (cubic bipartite), n <= 22 | 5,043 |
+| **total** | **49,498,419** |
 
 ### 4.2 The screener is trustworthy, and that was checked
 
