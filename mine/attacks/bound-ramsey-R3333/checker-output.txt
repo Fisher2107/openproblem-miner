@@ -1,0 +1,10 @@
+VERIFIER INTACT (40 files)
+
+$ ls mine/verify/checkers/ | grep -i ramsey
+check_ramsey_lower.py
+
+No checker for the R(3,3,3,3) (4-colour) family exists. check_ramsey_lower.py's schema
+({"family":"ramsey","s":<int>,"t":<int>,"n":<int>,"graph6":"<single graph>"}) verifies only
+the 2-colour case (one graph: no K_s clique, no size-t independent set). It cannot express
+or verify a 4-colour edge-colouring with a per-colour triangle-free condition. No witness
+was constructed or run against this target; see log.md for the full reasoning.

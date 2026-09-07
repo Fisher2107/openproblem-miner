@@ -1,0 +1,51 @@
+Decoded graph6 string: 'J^~~u?_C?O?'
+n = 11
+Number of edges = 24
+Edge list (0-indexed):
+[(0, 2), (0, 3), (0, 4), (0, 5), (0, 6), (0, 7), (1, 2), (1, 3), (1, 4), (1, 5), (1, 6), (1, 7), (2, 3), (2, 4), (2, 5), (2, 6), (2, 8), (3, 4), (3, 5), (3, 6), (3, 9), (4, 5), (4, 6), (4, 10)]
+
+Adjacency lists (0-indexed):
+  N(0) = [2, 3, 4, 5, 6, 7]  (degree 6)
+  N(1) = [2, 3, 4, 5, 6, 7]  (degree 6)
+  N(2) = [0, 1, 3, 4, 5, 6, 8]  (degree 7)
+  N(3) = [0, 1, 2, 4, 5, 6, 9]  (degree 7)
+  N(4) = [0, 1, 2, 3, 5, 6, 10]  (degree 7)
+  N(5) = [0, 1, 2, 3, 4]  (degree 5)
+  N(6) = [0, 1, 2, 3, 4]  (degree 5)
+  N(7) = [0, 1]  (degree 2)
+  N(8) = [2]  (degree 1)
+  N(9) = [3]  (degree 1)
+  N(10) = [4]  (degree 1)
+
+Condition 1: G is connected -> True
+
+  l(0) = independence number of G[N(0)] = 3   (|N(0)| = 6, N(0) = [2, 3, 4, 5, 6, 7])
+  l(1) = independence number of G[N(1)] = 3   (|N(1)| = 6, N(1) = [2, 3, 4, 5, 6, 7])
+  l(2) = independence number of G[N(2)] = 3   (|N(2)| = 7, N(2) = [0, 1, 3, 4, 5, 6, 8])
+  l(3) = independence number of G[N(3)] = 3   (|N(3)| = 7, N(3) = [0, 1, 2, 4, 5, 6, 9])
+  l(4) = independence number of G[N(4)] = 3   (|N(4)| = 7, N(4) = [0, 1, 2, 3, 5, 6, 10])
+  l(5) = independence number of G[N(5)] = 2   (|N(5)| = 5, N(5) = [0, 1, 2, 3, 4])
+  l(6) = independence number of G[N(6)] = 2   (|N(6)| = 5, N(6) = [0, 1, 2, 3, 4])
+  l(7) = independence number of G[N(7)] = 2   (|N(7)| = 2, N(7) = [0, 1])
+  l(8) = independence number of G[N(8)] = 1   (|N(8)| = 1, N(8) = [2])
+  l(9) = independence number of G[N(9)] = 1   (|N(9)| = 1, N(9) = [3])
+  l(10) = independence number of G[N(10)] = 1   (|N(10)| = 1, N(10) = [4])
+
+Sum of l(v) over all v = 24
+l_avg(G) = 24/11 = 24/11  (as exact fraction)
+1 + l_avg(G) = 35/11
+ceil(1 + l_avg(G)) = 4
+
+tree(G) = largest induced tree subgraph size = 4
+
+Condition 2: tree(G) == ceil(1 + l_avg(G))  ->  4 == 4  ->  True
+
+Hamiltonian path exists: False
+Condition 3: G has NO Hamiltonian path -> True
+
+============================================================
+Condition 1 (connected):                 True
+Condition 2 (tree(G) == ceil(1+l_avg)):   True  (4 vs 4)
+Condition 3 (no Hamiltonian path):        True
+OVERALL CLAIM HOLDS:                      True
+============================================================
