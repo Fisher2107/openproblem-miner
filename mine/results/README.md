@@ -1,3 +1,12 @@
+> **Run 1 (2026-09-06/07) shipped nothing, and this directory is empty on purpose.**
+> No conjecture in the 1,541-problem corpus was refuted and no published bound was beaten,
+> so there was nothing to promote. The verification tiers were exercised end to end on a
+> *positive control* instead — a rediscovered counterexample to a conjecture that was
+> already refuted in the literature — which passed T1 (frozen checker), T2 (blind
+> independent reimplementation) and T3 (Lean, `#print axioms` clean). That control lives in
+> `mine/attacks/t3-positive-control/`, deliberately **not** here, because it is not a
+> discovery. See `mine/REPORT.md`.
+
 # Results
 
 One directory per result: `mine/results/<problem-id>/` containing
