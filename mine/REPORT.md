@@ -392,12 +392,14 @@ This is the part that prices run 2.
 
 **1. "Machine-generated graph conjectures are the easiest ore" — half right, and the wrong
 half mattered.** The rubric gave Graffiti/WOWII conjectures +1.5, and they *were* the only
-Class A problems both cheap to check and small enough to witness. But the seam was already
-mined at the sizes we could reach: the `GraphConjecture200.lean` docstring records an
-exhaustive geng sweep over all 11,989,760 connected graphs on 4..10 vertices, done by
-someone else. Our n ≤ 10 sweep largely reproduced known ground. **The rubric scored the
-class, when the thing that matters is the frontier within the class.** Run 2 should score
-"published exhaustive frontier vs. our reachable frontier", not "is this class enumerable".
+Class A problems both cheap to check and small enough to witness. But the rubric never asked the question that decides the outcome: **at what size has
+someone already looked?** The `GraphConjecture200.lean` docstring records an exhaustive geng
+sweep over all 11,989,760 connected graphs on 4..10 vertices — for a *different* conjecture
+in the same family — and the known counterexamples in this family sit at n = 11, 13 and 18.
+So n <= 10 was, on the family's own evidence, the wrong place to look, and we could not even
+determine whether our sweep there was novel. **The rubric scored the class; what matters is
+the frontier within the class.** Run 2 should score "published exhaustive frontier vs. our
+reachable frontier", not "is this class enumerable".
 
 **2. "Decades of attempted proofs with no attempted refutation is a strong positive
 signal" — not tested, because the signal was unavailable.** Nothing in the harvested
