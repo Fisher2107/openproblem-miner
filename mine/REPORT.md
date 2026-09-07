@@ -1,12 +1,20 @@
 # Open-problem mine — run 1 report
 
-**Bottom line: zero new results. One end-to-end validated pipeline, three genuinely new
-negative results, and a priced diagnosis of why the yield was zero.**
+**Bottom line: zero new results. One end-to-end validated pipeline, one negative result
+that appears to be new, and a priced diagnosis of why the yield was zero.**
 
 No conjecture in this corpus was refuted, no published bound was improved, and
 `mine/results/` is empty. That is the honest outcome, and the rest of this document is
 about making it a useful one: what was searched, how far, with what instrument, and which
 of the triage rubric's predictions were wrong.
+
+On the one negative that looks new — **WOWII conjecture 141 holds for every connected graph
+on at most 16 vertices** — the claim is only that no prior verification to that order was
+found in the sources reachable from this container, and those sources were badly
+restricted (§2). Everything else the run exhausted (the other nine WOWII conjectures to
+n = 10, Erdős–Gyárfás over cubic graphs to n = 20, Barnette's class to n = 22) reproduces
+ground the literature had already covered. Reproducing known ground is what validated the
+instrument; it is not a contribution, and it is not presented as one.
 
 Everything below cites a file and a command. Nothing here is a summary of an intended run.
 
