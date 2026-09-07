@@ -41,6 +41,16 @@ Regenerate with `python3 mine/tools/yield_table.py`.
 | H5 | Graffiti / Graffiti.pc / TxGraffiti graph-invariant conjectures | 53 |
 | H6 | recent literature, via an arXiv conjecture-extraction pipeline on GitHub | 30 |
 
+**A caveat on the dedupe, stated because the number looks too good.** Only 12 of 1,553
+entries were merged as duplicates. That is not because the clusters barely overlap — they
+overlap a lot — but because the dedupe key is a hash of a normalised statement string, so
+it catches near-identical wordings and misses the same conjecture stated in two different
+vocabularies. The harvest agents caught more overlap by hand than the algorithm did (H3
+reports skipping ~18 entries it recognised as already present in H1/H2, e.g. Heilbronn =
+`erdos-0507`, Erdős–Straus = `erdos-0242-a`). So **1,541 is an upper bound on the number of
+distinct problems**, and the true figure is somewhat lower. Semantic dedupe by embedding or
+by pairwise LLM comparison is a run-2 item.
+
 ### Corpus by class
 
 | class | meaning | count |
@@ -49,6 +59,19 @@ Regenerate with `python3 mine/tools/yield_table.py`.
 | B | parametric-construction refutable | 144 |
 | C | bound-improvable | 383 |
 | D | proof-only | 867 |
+
+### Compute and wall-clock spent
+
+| resource | amount | note |
+|---|---|---|
+| wall clock | ~6.5 hours | one session, 2026-09-06 22:15 UTC to 2026-09-07 ~04:45 UTC |
+| machine | 4 cores, 15 GB RAM | `nproc` = 4 |
+| subagent LLM tokens | ~1.34 million across the runs that reported usage | 6 harvest + 6 attack + 1 blind-verification + 1 formalization agent |
+| agent runs lost to rate limits | 7 (all resumed from their own transcripts) | the session limit was hit twice; every agent was resumed rather than restarted |
+| **cost per verified result** | **undefined — there were none** | the only honest entry |
+
+The largest single compute item was not a search: it was compiling a 1,293-module mathlib
+subset from source because the olean cache host is blocked.
 
 ---
 
