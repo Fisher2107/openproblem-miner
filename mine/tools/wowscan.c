@@ -240,25 +240,28 @@ static int minimal_tds_differ(void) {           /* are there two minimal TDS of 
 
 /* ---- extra Class A targets attacked directly in wave 3 (see mine/attacks/) ---- */
 
-/* Does G contain a cycle of length exactly L? DP over (subset, endpoint), anchored at the
-   lowest vertex of the subset so each cycle is counted from one canonical start. */
+/* Does G contain a cycle of length exactly L? Bounded DFS from a canonical anchor:
+   every cycle is found from its lowest-numbered vertex, and all other vertices on it are
+   required to be greater than the anchor, so each cycle is discovered exactly once (twice,
+   once per direction). Cheap for the small L we care about (4, 8, 16) even at n=20+, which
+   a 2^n DP would not be. Cross-checked against an independent permutation brute force. */
+static int hc_L, hc_anchor;
+static int hc_dfs(int v, U used, int depth) {
+    if (depth == hc_L) return (adj[v] >> hc_anchor) & 1;
+    U nb = adj[v] & ~used;
+    while (nb) {
+        int u = low(nb); nb &= nb - 1;
+        if (u <= hc_anchor) continue;                 /* keep the anchor lowest */
+        if (hc_dfs(u, used | ((U)1 << u), depth + 1)) return 1;
+    }
+    return 0;
+}
 static int has_cycle_len(int L) {
     if (L < 3 || L > N) return 0;
-    static unsigned char reach[1 << 20][20];
-    int sz = 1 << N, S, v, u;
-    for (S = 0; S < sz; S++) for (v = 0; v < N; v++) reach[S][v] = 0;
-    for (v = 0; v < N; v++) reach[1 << v][v] = 1;
-    for (S = 1; S < sz; S++) {
-        int anchor = low((U)S);
-        if (pc((U)S) > L) continue;
-        for (v = 0; v < N; v++) {
-            if (!reach[S][v]) continue;
-            if (pc((U)S) == L && (adj[v] >> anchor & 1) && v != anchor) return 1;
-            U nb = adj[v] & ~(U)S;
-            while (nb) { u = low(nb); nb &= nb - 1;
-                if (u < anchor) continue;              /* keep the anchor lowest */
-                reach[S | (1 << u)][u] = 1; }
-        }
+    hc_L = L;
+    for (hc_anchor = 0; hc_anchor + L <= N + 0; hc_anchor++) {
+        if (hc_anchor > N - 1) break;
+        if (hc_dfs(hc_anchor, (U)1 << hc_anchor, 1)) return 1;
     }
     return 0;
 }

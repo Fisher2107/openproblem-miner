@@ -136,7 +136,21 @@ The fast C screener may over-report but must never under-report. Its 22 invarian
 compared against the frozen exact library on 850 graphs at n = 8, 9, 10 — **zero
 mismatches** (`python3 mine/tools/crosscheck_invariants.py 10 250`).
 
-### 4.3 Class C — bound records
+### 4.3 The verifier earned its keep: it rejected a false witness
+
+The single most important event in the run was not a search result. In the Schur arm, a
+tabu-search script produced what its own author believed was a valid 0-conflict colouring.
+The **frozen checker rejected it** (`check_schur_lower.py`, exit 1), pointing at a genuine
+monochromatic solution `2 + 13 = 15`. The cause was a bug in the searcher's incidence
+list, which double-counted the `x = y` triples and therefore scored a bad colouring as
+perfect. The agent found the bug, fixed it, found evidence of a *second* one, and abandoned
+the method as unreliable rather than shipping from it.
+
+This is exactly the failure the architecture exists to catch: a searcher and its own
+private notion of correctness agreeing with each other and both being wrong. A run in which
+the checker never rejects anything has not been tested. `mine/attacks/bound-schur-S6/`.
+
+### 4.4 Class C — bound records
 
 `mine/attacks/bound-*/`. The arm reconstructed the **known records** for R(4,6) at n = 35
 and R(5,5) at n = 42 and had the frozen checker accept them (exit 0), then failed to beat
@@ -172,6 +186,8 @@ sharing a misreading, and it was run blind, exactly as specified.
 
 | target | how close | the obstacle |
 |---|---|---|
+| Erdős–Gyárfás (cubic case of Erdős 64) | exhausted over all connected cubic graphs to n = 18 | witnesses must dodge every power of two at once; small cubic graphs are cycle-rich |
+| Barnette's conjecture | exhausted the whole class to n = 20 — only 8 graphs at n = 20 are 3-connected cubic bipartite planar | the class is tiny, so the reachable n is large; the literature is already far ahead |
 | WOWII 19 | objective reached **0** (the inequality is tight — equality is achieved) at n = 11, 12 and 13, but never negative | the bound appears to be sharp rather than false; equality cases are common, violations absent |
 | WOWII 141 | exhausted to n = 16 | none — this is a clean negative, and the girth argument makes larger n cheap; n = 17–18 is a few more core-hours |
 | R(4,6) ≥ 36 | reproduced the n = 35 record; SA best objective 108 at n = 36 | the record graph is irregular, so the circulant ansatz cannot contain it; the full space is far beyond an hour of 4 cores |
@@ -179,6 +195,32 @@ sharing a misreading, and it was run blind, exactly as specified.
 | R(3,3,3,3) | **no compute spent** | verifier coverage gap: the frozen Ramsey checker handles only 2 colours and has no schema for a 4-colour edge partition. Not a search failure |
 
 ---
+
+### 6b. The frontier ratio — the number that should drive run 2
+
+For the number-theory arm, each target's published search frontier was located first and
+our own frontier measured against it. Full logs in `mine/attacks/erdos-*/`.
+
+| problem | published frontier | ours | ratio |
+|---|---|---|---|
+| Erdős–Straus (`erdos-0242-a`) | N = 10^17 | N = 10^4 | **10^-13** |
+| Brocard (`erdos-0398`) | N = 10^9 | N = 6×10^4 | **6×10^-5** |
+| divisor race (`erdos-0647-a`) | N = 10^9 kernel-checked | N = 10^7 | **10^-2** |
+| consecutive powerful triple (`erdos-0364-a`) | none located | N = 10^13 | n/a |
+| 3-full pair (`erdos-0366-c`) | none located | N = 10^18 | n/a |
+
+Read plainly: on the two problems with solid published frontiers we are five to thirteen
+orders of magnitude behind, and no amount of the same brute force closes that — those gaps
+were closed with covering congruences and modular sieves, not with cores. Exactly one
+target (`erdos-0647-a`) is within reach of "more of the same", and only if the sieve is
+rewritten in C.
+
+Note also what the last two rows mean: for three of the six, **no published numeric search
+bound could be located at all**, so there is no ratio to compute. That is not a licence to
+claim novelty — it is a warning that the corpus entry is under-specified. In one case
+(`erdos-0366-a`) the agent factored the "known examples" that search kept surfacing and
+found they answer the *opposite* direction of the conjecture, confirming the corpus's own
+ambiguity flag was real.
 
 ## 7. Calibration — which triage predictions were wrong
 
@@ -219,6 +261,22 @@ would have ranked in the attack set. They have no checker, so nothing found abou
 could ship, and the same gap silently killed the R(3,3,3,3) arm. **Fix for run 2 is one
 line: finish Phase 1 before starting Phase 3.** The freeze was not reopened, which is the
 correct call and also the expensive one.
+
+**5b. Three arms were blocked by verifier coverage, not by difficulty.** R(3,3,3,3) needed
+a multi-colour Ramsey schema the frozen checker does not have; the weak Schur number needs
+the `x < y` condition, and the frozen checker implements the standard one (`x = y` allowed)
+— demonstrated concretely by feeding it the trivial true weak-Schur witness for WS(1) = 2,
+which it correctly rejects as a *standard* Schur claim. Both were reported as gaps rather
+than papered over. A checker family should be designed around the witness *shapes* in the
+triage list, not around individual problems.
+
+**5c. Two corpus entries carried notation drift that would have produced a fake result.**
+The `bound-vdw-W4-4` entry's prose says "2-colouring" while its own `known_cases` uses the
+opposite convention (`W(r,k)` = r colours, k-term AP), and the Bollobás–Nikiforov entry's
+exclusion clause said `G != K_3` where the true exception is `K_1, K_2, K_3` — an early run
+duly flagged `K_2` as a "violation". Both were caught by agents reading the statement
+carefully before spending compute. Statement drift does not only live in the Lean layer;
+it lives in the corpus.
 
 **6. A searcher that has not passed a positive control is not evidence.** The first
 annealer seeded every restart from a random spanning path — which guarantees a Hamiltonian
