@@ -532,7 +532,7 @@ theorem deg_one_endpoint {v : Nat} (huniq : ∀ x y, Adj v x → Adj v y → x =
       firstOf l = some v ∨ lastOf l = some v := by
   intro l
   induction l with
-  | nil => intro _ _ hv; exact absurd hv (by simp)
+  | nil => intro _ _ hv; nomatch hv
   | cons x t ih =>
     intro hc hn hv
     cases t with
@@ -540,7 +540,7 @@ theorem deg_one_endpoint {v : Nat} (huniq : ∀ x y, Adj v x → Adj v y → x =
       left
       cases hv with
       | head => rfl
-      | tail _ h => exact absurd h (by simp)
+      | tail _ h => nomatch h
     | cons y t' =>
       have hxy : Adj x y := by cases hc with | cons h _ => exact h
       have hcy : Chain' Adj (y :: t') := by cases hc with | cons _ h => exact h
@@ -579,7 +579,7 @@ theorem no_ham_path : ¬ ∃ l : List Nat, IsHamPath l := by
   have key : ∀ (o : Option Nat) (p q : Nat), o = some p → o = some q → p = q := by
     intro o p q h1 h2
     rw [h1] at h2
-    exact (Option.some.inj h2).symm
+    exact Option.some.inj h2
   rcases e8 with a | a <;> rcases e9 with b | b <;> rcases e10 with c | c
   · exact absurd (key _ _ _ a b) (by decide)
   · exact absurd (key _ _ _ a b) (by decide)
