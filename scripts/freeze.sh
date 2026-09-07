@@ -13,8 +13,5 @@ if [ -f "$V/FREEZE.sha256" ]; then
   echo "was genuinely premature, and say so in the report."
   exit 1
 fi
-find "$V" -type f ! -name FREEZE.sha256 -print0 \
-  | LC_ALL=C sort -z \
-  | while IFS= read -r -d '' f; do printf '%s  %s\n' "$(sha256_stdin < "$f")" "$f"; done \
-  > "$V/FREEZE.sha256"
-echo "frozen: $(wc -l < "$V/FREEZE.sha256") files -> $V/FREEZE.sha256"
+verify_source_files "$V" > "$V/FREEZE.sha256"
+echo "frozen: $(wc -l < "$V/FREEZE.sha256") source files -> $V/FREEZE.sha256"

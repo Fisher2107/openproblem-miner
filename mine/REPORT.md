@@ -155,14 +155,20 @@ has never fired is not a validated checker.
 
 `bash mine/verify/run-tests.sh` → 71 checks, 0 failures.
 
-**Known defect in the freeze manifest — read `mine/logs/FREEZE-DEFECT.md`.** Two of the 40
-pinned entries are CPython `.pyc` bytecode caches that happened to be on disk when
-`freeze.sh` ran. They are gitignored and not byte-reproducible, so `check-freeze.sh` — and
-therefore CI — reports `VERIFIER DRIFT` on a fresh checkout. **All 38 source files under
-`mine/verify/` hash to exactly their frozen values** (the proof command is in that file and
-exits 0), so no checker was modified. It is reported rather than repaired: deleting the two
-lines would be an edit to the frozen verifier, and the fact that it would be harmless here
-is precisely the reasoning that would make the rule meaningless. **The freeze was never reopened.** Three moments where
+**Defect in the freeze manifest, since resolved outside the frozen tree — read
+`mine/logs/FREEZE-DEFECT.md`.** Two of the 40 pinned entries are CPython `.pyc` bytecode
+caches that happened to be on disk when `freeze.sh` ran. They are gitignored and not
+byte-reproducible, so `check-freeze.sh` — and therefore CI — reported `VERIFIER DRIFT` on
+every fresh checkout. **All 38 source files under `mine/verify/` hash to exactly their
+frozen values**, so no checker was ever modified. The repair was made in `scripts/`, which
+is outside the freeze: `check-freeze.sh` now excludes `__pycache__/` from both the computed
+listing and the stored manifest, so the comparison covers the 38 source files and nothing
+derived. `mine/verify/FREEZE.sha256` was not edited — deleting the two lines would have been
+an edit to the frozen verifier, and the fact that it would have been harmless here is
+precisely the reasoning that would make the rule meaningless. The narrowness is deliberate:
+only `__pycache__/` is excluded, so a loose sourceless `.pyc` placed anywhere in the frozen
+tree is still caught, and the exclusion is verified against a five-case tamper matrix
+(§ audit path). **The freeze was never reopened.** Three moments where
 reopening it would have helped — the four Class A graph conjectures that arrived after the
 freeze, the multi-colour Ramsey arm, and the weak Schur arm — are recorded in §7 as costs,
 not repaired.
