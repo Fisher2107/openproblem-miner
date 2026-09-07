@@ -625,31 +625,71 @@ theorem near_ham_chain : Chain' Adj [8,2,0,7,1,5,3,6,4,10] := by
 The conjecture asserts: for every finite simple connected graph G, if
 `tree(G) = ⌈1 + l_avg(G)⌉` then G has a Hamiltonian path.
 
-Here `n = 11`, `sum of l(v) = 3+3+3+3+3+2+2+2+1+1+1 = 24`, so `l_avg = 24/11` and
-`⌈1 + 24/11⌉ = 1 + ⌈24/11⌉ = 1 + 3 = 4`.  Real numbers are avoided: over the naturals,
-`⌈sumL / n⌉ = (sumL + n - 1) / n` with truncating division, and adding the *integer* 1
-commutes with the ceiling, so the hypothesis reads `treeSize = 1 + (sumL + n - 1) / n`,
-i.e. `4 = 1 + (24 + 11 - 1) / 11 = 1 + 34 / 11 = 1 + 3`. -/
+Here `n = 11` and `sum of l(v) = 3+3+3+3+3+2+2+2+1+1+1 = 24`, so `l_avg = 24/11` and
+`⌈1 + 24/11⌉ = 1 + ⌈24/11⌉ = 1 + 3 = 4 = tree(G)`: the hypothesis holds, but G has no
+Hamiltonian path.
+
+Real numbers are avoided.  Over the naturals, `⌈a/b⌉ = (a + b - 1) / b` with truncating
+division, and adding the *integer* 1 commutes with the ceiling, so
+`⌈1 + l_avg(G)⌉` is rendered as `1 + (sumL + n - 1) / n`; with `sumL = 24, n = 11` that is
+`1 + 34/11 = 1 + 3 = 4`. -/
+
+/-- The value of `l(v)` for each vertex `v`, as proved in §6. -/
+def lOf (v : Nat) : Nat := [3, 3, 3, 3, 3, 2, 2, 2, 1, 1, 1].getD v 0
+
+theorem l_all : ∀ v, v < 11 → LVal v (lOf v) := by
+  intro v hv
+  match v, hv with
+  | 0, _ => exact l_0
+  | 1, _ => exact l_1
+  | 2, _ => exact l_2
+  | 3, _ => exact l_3
+  | 4, _ => exact l_4
+  | 5, _ => exact l_5
+  | 6, _ => exact l_6
+  | 7, _ => exact l_7
+  | 8, _ => exact l_8
+  | 9, _ => exact l_9
+  | 10, _ => exact l_10
+
+/-- The sum of the eleven l-values. -/
+theorem sum_l : sumBelow lOf 11 = 24 := by decide
+
+/-- **Main theorem.**  G is a counterexample to WOWII Conjecture 200.
+
+Read back into English:
+ * `Connected` — G is connected (§3);
+ * `∀ v < 11, LVal v (lOf v)` — for each of the eleven vertices, `l(v)` (the independence
+   number of the subgraph induced on `N(v)`) is the value listed in `lOf` (§6);
+ * `TreeNumber t` with `t = 1 + (Σ l(v) + 11 - 1) / 11` — the largest order of an induced
+   subgraph of G that is a tree equals `⌈1 + l_avg(G)⌉`, so the hypothesis of the
+   conjecture holds (§5);
+ * `¬ ∃ l, IsHamPath l` — no list of vertices is a Hamiltonian path of G (§7).
+-/
 theorem conj200_counterexample :
-    -- (1) G is connected
     Connected ∧
-    -- (2) tree(G) = 4
+    (∀ v, v < 11 → LVal v (lOf v)) ∧
+    (∃ t, TreeNumber t ∧ t = 1 + (sumBelow lOf 11 + 11 - 1) / 11) ∧
+    (¬ ∃ l : List Nat, IsHamPath l) :=
+  ⟨G_connected, l_all, ⟨4, G_treeNumber, by decide⟩, no_ham_path⟩
+
+/-- The same statement with the numbers spelled out, for readability. -/
+theorem conj200_counterexample_explicit :
+    Connected ∧
     TreeNumber 4 ∧
-    -- (3) the eleven values l(v)
     (LVal 0 3 ∧ LVal 1 3 ∧ LVal 2 3 ∧ LVal 3 3 ∧ LVal 4 3 ∧ LVal 5 2 ∧ LVal 6 2 ∧
       LVal 7 2 ∧ LVal 8 1 ∧ LVal 9 1 ∧ LVal 10 1) ∧
-    -- their sum is 24 over n = 11 vertices
     (3 + 3 + 3 + 3 + 3 + 2 + 2 + 2 + 1 + 1 + 1 = 24) ∧
-    -- (4) so the hypothesis of Conjecture 200 holds: tree(G) = ⌈1 + l_avg(G)⌉
     (4 = 1 + (24 + 11 - 1) / 11) ∧
-    -- (5) but G has no Hamiltonian path: the conclusion of Conjecture 200 fails
     (¬ ∃ l : List Nat, IsHamPath l) :=
   ⟨G_connected, G_treeNumber,
    ⟨l_0, l_1, l_2, l_3, l_4, l_5, l_6, l_7, l_8, l_9, l_10⟩,
    by decide, by decide, no_ham_path⟩
 
 #print axioms conj200_counterexample
+#print axioms conj200_counterexample_explicit
 #print axioms G_connected
 #print axioms G_treeNumber
+#print axioms l_all
 #print axioms no_ham_path
 #print axioms adj_matches_listg
