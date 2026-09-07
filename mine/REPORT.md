@@ -223,6 +223,35 @@ A concrete lesson fell out of it: the actual record graphs at n = 35 and n = 42 
 **irregular** (degrees 12–15 and 19–22), so the circulant ansatz was searching a strictly
 smaller space than the one containing the record. That is now in `mine/memory/`.
 
+### 4.5 How the budget was actually rescheduled
+
+Arms were treated as bandit arms with reward = measured movement in the scalar objective.
+What actually happened, in order:
+
+1. **All ten WOWII arms opened with the same exhaustive budget** because exhaustion at
+   n <= 10 is cheap (about two minutes of one core for all ten at once). Reward: zero
+   movement on every arm — no candidate, and the best objective never went positive.
+2. **The annealing arms were killed after n = 14.** Their signal was informative but
+   negative: conjectures 19, 40 and 61 all reach objective **exactly 0** and stop, at
+   n = 11, 12, 13 and 14. Objective 0 means the inequality is *tight* — equality is
+   achieved — but never exceeded. An arm that reaches the boundary from below and stays
+   there is not "about to succeed"; it is telling you the bound is sharp.
+3. **Budget was reallocated on a structural signal, not a numeric one.** The reward that
+   mattered was not objective movement, it was *reach per core-hour*, and reach comes from
+   hypothesis restrictiveness. Conjecture 141's girth >= 6 requirement made its class small
+   enough to exhaust to n = 16, so it got the reallocated time; the general arms did not.
+4. **The same signal picked the two extra targets.** Erdős–Gyárfás (cubic graphs) and
+   Barnette (cubic + bipartite + planar + 3-connected) were added *because* their
+   hypothesis classes are tiny, reaching n = 20 and n = 22 respectively — twice the reach
+   of any general-graph sweep, on the same hardware.
+5. **The Class C arms were killed on a reproduction failure, not a search failure.** Once
+   the van der Waerden and Schur searches could not reproduce *known* records near their
+   critical thresholds, further budget on them could not have produced a trustworthy
+   result, so it was stopped rather than spent.
+
+The generalisable rule this run learned: **for a fixed compute budget, schedule on the
+restrictiveness of the hypothesis class, not on the tractability of the statement.**
+
 ---
 
 ## 5. Verification tiering — demonstrated on a positive control
