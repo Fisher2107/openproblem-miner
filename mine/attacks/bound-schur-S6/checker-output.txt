@@ -1,0 +1,20 @@
+=== bash scripts/check-freeze.sh ===
+VERIFIER INTACT (40 files)
+
+=== python3 mine/verify/checkers/check_schur_lower.py mine/attacks/bound-schur-S6/witnesses/s3_n13.json ===
+{
+  "r": 3,
+  "n": 13,
+  "monochromatic_sum_found": null
+}
+ACCEPT: no monochromatic x+y=z in this 3-colouring of [1,13]; certifies S(3) >= 13.
+NOTE: published value supplied is 13; this witness does not beat it.
+
+=== python3 mine/verify/checkers/check_schur_lower.py mine/attacks/bound-schur-S6/witnesses/s4_n44_sat.json ===
+{
+  "r": 4,
+  "n": 44,
+  "monochromatic_sum_found": null
+}
+ACCEPT: no monochromatic x+y=z in this 4-colouring of [1,44]; certifies S(4) >= 44.
+NOTE: published value supplied is 44; this witness does not beat it.
