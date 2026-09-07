@@ -334,11 +334,29 @@ numeric instance kernel-checked, and `IsInducedTree` is defined as "connected, n
 invalidates the numbers; both are places where the trusted statement is larger than the
 proved one.
 
-The file is being strengthened in response — stating the conjecture as a Lean proposition
-over a general `(n, adj)` and proving its negation, so that the modus tollens happens
-inside the kernel rather than in a comment. **Whatever state that lands in is reported as
-it is**; if the general form does not compile, this section will say the T3 artefact is the
-weaker one the back-translation described.
+**The gap was then closed.** The file now defines the conjecture itself as a Lean
+proposition quantified over an arbitrary finite graph —
+
+```lean
+def Conjecture200 : Prop :=
+  ∀ (n : Nat) (adj : Nat → Nat → Bool) (L : Nat → Nat) (t : Nat),
+    0 < n → WellFormed n adj → GConnected n adj →
+    (∀ v, v < n → GLVal n adj v (L v)) → GTreeNumber n adj t →
+    t = 1 + (sumBelow L n + n - 1) / n →
+    GHasHamPath n adj
+```
+
+— and proves `theorem conjecture200_is_false : ¬ Conjecture200` by instantiating it at the
+11-vertex graph and discharging every hypothesis with the results already established. The
+modus tollens now happens inside the kernel rather than in a comment.
+
+Verified independently of the agent that wrote it:
+`grep -cE "sorry|native_decide" Conj200Control.lean` → 0, `lean Conj200Control.lean`
+compiles, and `#print axioms conjecture200_is_false` → `[propext, Quot.sound]`.
+
+The two smaller findings remain, now stated explicitly in the file rather than assumed: the
+real-to-Nat ceiling translation is a trusted statement-level step, and `IsInducedTree` is
+defined by the standard "connected, nonempty, |E| = |V| − 1" characterisation.
 
 **None of this is a discovery.** Conjecture 200 was refuted before this run started. What
 the four tiers demonstrate is that had a *new* counterexample turned up, the machinery to
