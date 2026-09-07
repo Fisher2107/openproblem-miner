@@ -92,3 +92,23 @@ exit=1 (1 = no matches)
 --- BUILD -----------------------------------------------------------------
 $ cd /home/user/openproblem-miner/mine/attacks/t3-positive-control
 $ time lean Conj200Control.lean
+'conj200_counterexample' depends on axioms: [propext, Quot.sound]
+'conj200_counterexample_explicit' depends on axioms: [propext, Quot.sound]
+'G_connected' depends on axioms: [propext]
+'G_treeNumber' depends on axioms: [propext, Quot.sound]
+'l_all' depends on axioms: [propext, Quot.sound]
+'no_ham_path' depends on axioms: [propext, Quot.sound]
+'adj_matches_listg' depends on axioms: [propext]
+
+real	0m52.367s
+user	0m25.234s
+sys	0m7.272s
+
+The seven lines above are the output of the `#print axioms` commands at the end of the
+file (there is no other output: the build is warning-free and error-free).
+
+  no `sorryAx`       => no `sorry` anywhere in the dependency graph of these theorems;
+  no `ofReduceBool`  => `native_decide` was NOT used; every `decide` was replayed by the
+                        Lean kernel itself;
+  no `Classical.choice` either.  `propext` and `Quot.sound` are two of the three standard
+  Lean axioms, pulled in by `simp`/`omega`; both are part of Lean's trusted core.
