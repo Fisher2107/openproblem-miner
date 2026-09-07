@@ -202,6 +202,11 @@ screener is a necessary condition of this kind; they are listed and justified in
 The same graph tested for two conjectures counts twice, because the cost and the evidence
 are per-conjecture.
 
+The n = 11 row grows while the sweep runs; `python3 mine/tools/refresh_n11_numbers.py`
+re-reads the slice log and rewrites the three places this report quotes it, so the numbers
+here cannot drift from the log. It exits nonzero if any slice ever reports a candidate —
+that would mean the negative needs revisiting, not a number bump.
+
 | sweep | graphs |
 |---|---|
 | all connected graphs n <= 10, all ten WOWII conjectures | 11,989,762 |
@@ -212,7 +217,7 @@ are per-conjecture.
 | erdos-0023 (triangle-free, make bipartite), n = 5, 10 | 9,838 |
 | generator families 1 and 2 | 20,908 |
 | Barnette (cubic bipartite), n <= 24 | 34,622 |
-| exhaustive n = 11 (cheap arms), edge counts 10..24 — partial, still running | 208,778,261 |
+| exhaustive n = 11 (cheap arms), edge counts 10..24 — still running | 208,778,261 |
 | **total** | **258,816,748** |
 
 ### 4.2 The screener is trustworthy, and that was checked
