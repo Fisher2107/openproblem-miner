@@ -44,7 +44,7 @@ Regenerate with `python3 mine/tools/yield_table.py`.
 | frozen checkers written and validated | 15 | `mine/verify/checkers/` |
 | files hash-locked in the verifier | 40 | `mine/verify/FREEZE.sha256` |
 | verifier self-tests passing (both directions) | 71 | `bash mine/verify/run-tests.sh` |
-| graph-conjecture evaluations, exhaustive | **258,816,748** | §4, table below |
+| graph-conjecture evaluations, exhaustive | **442,423,983** | §4, table below |
 | problems with an attack log | **41** (A: 28, C: 11, D: 2, **B: 0**) | `mine/attacks/*/log.md` |
 | failed ansatz families recorded | 36 | `mine/memory/negative.jsonl` |
 | candidates reaching T1 | 0 (new) / 1 (positive control) | §5 |
@@ -217,8 +217,8 @@ that would mean the negative needs revisiting, not a number bump.
 | erdos-0023 (triangle-free, make bipartite), n = 5, 10 | 9,838 |
 | generator families 1 and 2 | 20,908 |
 | Barnette (cubic bipartite), n <= 24 | 34,622 |
-| exhaustive n = 11 (cheap arms), edge counts 10..24 — still running | 208,778,261 |
-| **total** | **258,816,748** |
+| exhaustive n = 11 (cheap arms), edge counts 10..26 — still running | 392,385,496 |
+| **total** | **442,423,983** |
 
 ### 4.2 The screener is trustworthy, and that was checked
 
