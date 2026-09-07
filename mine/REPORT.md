@@ -153,8 +153,16 @@ Then the accept path was fired end to end on **two published counterexamples** (
 and 200), reproducing their published invariant values exactly. A checker whose accept path
 has never fired is not a validated checker.
 
-`bash mine/verify/run-tests.sh` → 71 checks, 0 failures. `bash scripts/check-freeze.sh` →
-`VERIFIER INTACT (40 files)`. **The freeze was never reopened.** Three moments where
+`bash mine/verify/run-tests.sh` → 71 checks, 0 failures.
+
+**Known defect in the freeze manifest — read `mine/logs/FREEZE-DEFECT.md`.** Two of the 40
+pinned entries are CPython `.pyc` bytecode caches that happened to be on disk when
+`freeze.sh` ran. They are gitignored and not byte-reproducible, so `check-freeze.sh` — and
+therefore CI — reports `VERIFIER DRIFT` on a fresh checkout. **All 38 source files under
+`mine/verify/` hash to exactly their frozen values** (the proof command is in that file and
+exits 0), so no checker was modified. It is reported rather than repaired: deleting the two
+lines would be an edit to the frozen verifier, and the fact that it would be harmless here
+is precisely the reasoning that would make the rule meaningless. **The freeze was never reopened.** Three moments where
 reopening it would have helped — the four Class A graph conjectures that arrived after the
 freeze, the multi-colour Ramsey arm, and the weak Schur arm — are recorded in §7 as costs,
 not repaired.
