@@ -22,6 +22,14 @@ we could not determine which, because the sources that would say are blocked (§
 
 Everything below cites a file and a command. Nothing here is a summary of an intended run.
 
+**Audit path.** `bash scripts/reproduce-run1.sh` re-runs every claim in this report whose
+truth does not depend on how long you are willing to wait: the freeze check, the verifier's
+71 self-tests, the screener-versus-frozen-library cross-check, a short exhaustive sweep, the
+**positive control** (if the searcher cannot rediscover a known counterexample, its
+negatives mean nothing), the T1 accept path on two published counterexamples, the blind T2
+checker, the T3 Lean build, and the CI result check. It was run against this commit and
+ends in `RUN 1 CLAIMS REPRODUCED` — output in `mine/logs/reproduce-run1.log`.
+
 ---
 
 ## 1. Yield table
