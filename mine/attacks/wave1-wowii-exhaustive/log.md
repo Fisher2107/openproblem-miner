@@ -88,8 +88,14 @@ CONFIRMED: the frozen checkers agree with the screener on every sampled graph.
 ```
 
 and, for conjecture 141, an exhaustive rather than sampled re-check of the only class where
-a violation is possible (girth >= 6), via `python3 mine/tools/verify_141_full.py 3 14`
-(-> `verify141_full.log`).
+a violation is possible (girth >= 6), via `python3 mine/tools/verify_141_full.py 3 14`:
+
+```
+n=14  girth>=6 graphs checked by the FROZEN checker: 21215   ACCEPTs so far: 0
+TOTAL 27911 graphs, 0 ACCEPTs
+CONFIRMED BY THE FROZEN VERIFIER: conjecture 141 has no counterexample of girth >= 6
+on at most 14 vertices, and a counterexample must have girth >= 6.
+```
 
 A single ACCEPT in either run would have meant the screener under-reported and this whole
 sweep was worthless. Neither produced one.

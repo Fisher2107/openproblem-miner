@@ -186,8 +186,9 @@ Full log: `mine/attacks/wave1-wowii-exhaustive/log.md`, `mine/attacks/wave2-wowi
 
 Two of these are genuinely new coverage rather than re-treading:
 
-> **Conjecture 141 holds for every finite simple connected graph on at most 16 vertices.**
-> The other nine hold for every one on at most 10 vertices.
+> **Conjecture 141 holds for every finite simple connected graph on at most 16 vertices** —
+> re-verified by the frozen checker itself, exhaustively over the decisive girth >= 6 class,
+> up to n = 14. The other nine hold for every connected graph on at most 10 vertices.
 
 The 141 result comes from a proof-shaped shortcut rather than brute force: `tree(G) ≥
 max_v l(v) + 1` always (a vertex plus a maximum independent subset of its neighbourhood
@@ -229,7 +230,10 @@ that word:
   (`mine/tools/verify_n10_sample.py`, log in `mine/attacks/wave1-wowii-exhaustive/verify_n10_sample.log`.)
 - **Exhaustive re-check of the decisive class for conjecture 141.** Since a violation of 141
   forces girth >= 6, the frozen checker was run on *every* girth >= 6 graph up to n = 14 —
-  not a sample. Result in `verify141_full.log`.
+  not a sample: **27,911 graphs, 0 ACCEPTs** (`verify141_full.log`). So for n <= 14 the
+  headline negative is a statement about the frozen verifier, not about the screener; from
+  n = 15 to 16 it rests on the screener, whose invariants agree with that verifier on every
+  one of 850 cross-checked graphs.
 
 An ACCEPT in either run would have meant the screener under-reported and the headline
 negative was wrong. Neither produced one.
