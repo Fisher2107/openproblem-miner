@@ -211,7 +211,8 @@ are per-conjecture.
 | Erdős–Gyárfás (cubic, power-of-two cycle), n <= 20 | 556,470 |
 | erdos-0023 (triangle-free, make bipartite), n = 5, 10 | 9,838 |
 | generator families 1 and 2 | 20,908 |
-| Barnette (cubic bipartite), n <= 22 | 5,043 |
+| Barnette (cubic bipartite), n <= 24 | 34,622 |
+| exhaustive n = 11 (cheap arms), edge counts 10..18 — partial, still running | 7,120,499 |
 | **total** | **50,008,908** |
 
 ### 4.2 The screener is trustworthy, and that was checked
