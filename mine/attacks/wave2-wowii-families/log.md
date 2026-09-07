@@ -128,3 +128,32 @@ were worth more to the frozen-checker re-verification of the n <= 10 and girth >
 Three arms (141, 160, 198a, 291, 314) had not yet run when the arms were killed; their
 exhaustive results already cover the same range, so nothing was lost that the exhaustive
 sweeps had not already settled.
+
+## The n = 11 exhaustive sweep — partial, and why it stopped there
+
+n = 11 is where the first published counterexample in this family lives, so an exhaustive
+sweep there was the highest-value compute left. It was run **sliced by edge count**, so
+that an interrupted run still states something exact rather than nothing:
+
+| slices | coverage | graphs | candidates |
+|---|---|---|---|
+| edges 10..26 (17 of 46) | every connected graph on 11 vertices with at most 26 edges | **392,385,496** | **0** |
+| edges 27..55 | not run | — | — |
+
+> **The eight conjectures scanned (19, 61, 100, 133, 141, 160, 291, 314) have no
+> counterexample among the 392 million connected graphs on 11 vertices with at most 26
+> edges.** The remaining slices contain the denser graphs and were not reached.
+
+**Why it stopped.** Not a crash and not a decision about the mathematics: this container is
+suspended between orchestrator turns, so a detached background job only advances while the
+session is actively doing something else. Across one 54-minute wall-clock window the
+`edges=27` slice accumulated roughly 3 minutes of CPU. Finishing all 46 slices
+(1,006,700,565 graphs) was therefore not reachable, and continuing to idle-wait on it would
+have bought coverage at roughly one part in twenty of real time.
+
+That is worth recording as an environment fact for run 2: **long background compute in this
+harness must be driven by the foreground, not detached from it.** A sweep of this size
+should be split into foreground-sized chunks that each complete inside a single turn, which
+is exactly what the edge-slicing already makes possible.
+
+Numbers regenerate with `python3 mine/tools/refresh_n11_numbers.py`.

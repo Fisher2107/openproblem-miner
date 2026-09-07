@@ -217,7 +217,7 @@ that would mean the negative needs revisiting, not a number bump.
 | erdos-0023 (triangle-free, make bipartite), n = 5, 10 | 9,838 |
 | generator families 1 and 2 | 20,908 |
 | Barnette (cubic bipartite), n <= 24 | 34,622 |
-| exhaustive n = 11 (cheap arms), edge counts 10..26 — still running | 392,385,496 |
+| exhaustive n = 11 (cheap arms), edge counts 10..26 — stopped partway, by choice | 392,385,496 |
 | **total** | **442,423,983** |
 
 ### 4.2 The screener is trustworthy, and that was checked
@@ -378,6 +378,7 @@ promote it existed, worked, and — importantly — had a step in it that pushed
 
 | target | how close | the obstacle |
 |---|---|---|
+| exhaustive n = 11 | 392,385,496 graphs cleared — every connected graph on 11 vertices with ≤ 26 edges | not a mathematical obstacle: the container is suspended between orchestrator turns, so the detached sweep gained ~3 minutes of CPU per 54 minutes of wall clock. Slices 27..55 unreached. Run 2 should drive long sweeps from the foreground in turn-sized chunks — the edge-slicing already allows it |
 | Erdős–Gyárfás (cubic case of Erdős 64) | exhausted over all connected cubic graphs to n = 20 | witnesses must dodge every power of two at once; small cubic graphs are cycle-rich |
 | Barnette's conjecture | exhausted the whole class to n = 20 — only 8 graphs at n = 20 are 3-connected cubic bipartite planar | the class is tiny, so the reachable n is large; the literature is already far ahead |
 | WOWII 19 | objective reached **0** (the inequality is tight — equality is achieved) at n = 11, 12 and 13, but never negative | the bound appears to be sharp rather than false; equality cases are common, violations absent |
