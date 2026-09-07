@@ -53,6 +53,14 @@ Regenerate with `python3 mine/tools/yield_table.py`.
 | H5 | Graffiti / Graffiti.pc / TxGraffiti graph-invariant conjectures | 53 |
 | H6 | recent literature, via an arXiv conjecture-extraction pipeline on GitHub | 30 |
 
+**Provenance.** Of the 1,541 entries, **1,523 cite a specific file in a cloned repository**
+(`clone:<owner>/<repo>@<commit>:<path>`) and 18 cite a WebSearch result URL. **Zero rest on
+model memory** — the `model-knowledge-unverified` tag, which policy bars from the attack
+pool, ended up unused because every cluster found a citable mirror. Every row carries a
+class and a tractability score; 12 lack a `url` field but all 12 carry clone provenance,
+which is the stronger citation. Verify with
+`python3 -c "import json;rows=[json.loads(l) for l in open('mine/corpus/problems.jsonl')];print(len(rows))"`.
+
 **A caveat on the dedupe, stated because the number looks too good.** Only 12 of 1,553
 entries were merged as duplicates. That is not because the clusters barely overlap — they
 overlap a lot — but because the dedupe key is a hash of a normalised statement string, so
