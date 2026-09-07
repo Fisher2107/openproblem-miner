@@ -45,8 +45,8 @@ Regenerate with `python3 mine/tools/yield_table.py`.
 | files hash-locked in the verifier | 40 | `mine/verify/FREEZE.sha256` |
 | verifier self-tests passing (both directions) | 71 | `bash mine/verify/run-tests.sh` |
 | graph-conjecture evaluations, exhaustive | **50,008,908** | §4, table below |
-| problems with an attack log | **36** (A: 27, C: 7, D: 2, **B: 0**) | `mine/attacks/*/log.md` |
-| failed ansatz families recorded | 31 | `mine/memory/negative.jsonl` |
+| problems with an attack log | **41** (A: 28, C: 11, D: 2, **B: 0**) | `mine/attacks/*/log.md` |
+| failed ansatz families recorded | 36 | `mine/memory/negative.jsonl` |
 | candidates reaching T1 | 0 (new) / 1 (positive control) | §5 |
 | **T3-verified new results** | **0** | — |
 | T3 demonstrated on a positive control | 1 | `mine/attacks/t3-positive-control/`, axioms `[propext, Quot.sound]` |
@@ -94,10 +94,10 @@ by pairwise LLM comparison is a run-2 item.
 
 | resource | amount | note |
 |---|---|---|
-| wall clock | ~6.5 hours | one session, 2026-09-06 22:15 UTC to 2026-09-07 ~04:45 UTC |
+| wall clock | ~6.8 hours | one session, 2026-09-06 22:15 UTC to 2026-09-07 ~05:00 UTC |
 | machine | 4 cores, 15 GB RAM | `nproc` = 4 |
-| subagent LLM tokens | ~1.34 million across the runs that reported usage | 6 harvest + 6 attack + 1 blind-verification + 1 formalization agent |
-| agent runs lost to rate limits | 7 (all resumed from their own transcripts) | the session limit was hit twice; every agent was resumed rather than restarted |
+| subagent LLM tokens | ~1.5 million across the runs that reported usage | 6 harvest + 6 attack + 1 blind-verification + 1 formalization + 1 back-translation agent |
+| agent runs lost to rate limits | 9 (all resumed from their own transcripts) | the session limit was hit three times; every agent was resumed rather than restarted, so no work was redone |
 | **cost per verified result** | **undefined — there were none** | the only honest entry |
 
 The largest single compute item was not a search: it was compiling a 1,293-module mathlib
