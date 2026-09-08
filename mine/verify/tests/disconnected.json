@@ -1,0 +1,15 @@
+{
+  "conjecture": "wow2-160",
+  "n": 4,
+  "edges": [
+    [
+      0,
+      1
+    ],
+    [
+      2,
+      3
+    ]
+  ],
+  "note": "disconnected; checker must REJECT"
+}

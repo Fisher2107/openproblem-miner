@@ -1,0 +1,22 @@
+{
+  "family": "schur",
+  "r": 3,
+  "n": 13,
+  "colouring": [
+    0,
+    1,
+    1,
+    0,
+    2,
+    2,
+    2,
+    2,
+    2,
+    0,
+    1,
+    1,
+    0
+  ],
+  "published_value": 13,
+  "note": "classical witness that S(3) >= 13"
+}

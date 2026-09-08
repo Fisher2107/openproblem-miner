@@ -1,0 +1,39 @@
+=== bash scripts/check-freeze.sh ===
+VERIFIER INTACT (40 files)
+
+=== python3 mine/verify/checkers/check_vdw_lower.py mine/attacks/bound-vdw-W4-4/witnesses/w33_n26.json ===
+{
+  "k": 3,
+  "r": 3,
+  "n": 26,
+  "monochromatic_AP_found": null
+}
+ACCEPT: no monochromatic 3-term AP in an 3-colouring of [1,26]; this certifies W(3,3) > 26.
+NOTE: published lower bound supplied is 26; this witness BEATS it.
+
+=== python3 mine/verify/checkers/check_vdw_lower.py mine/attacks/bound-vdw-W4-4/witnesses/w43_n20.json ===
+{
+  "k": 3,
+  "r": 4,
+  "n": 20,
+  "monochromatic_AP_found": null
+}
+ACCEPT: no monochromatic 3-term AP in an 4-colouring of [1,20]; this certifies W(3,4) > 20.
+
+=== python3 mine/verify/checkers/check_vdw_lower.py mine/attacks/bound-vdw-W4-4/witnesses/w43_n30.json ===
+{
+  "k": 3,
+  "r": 4,
+  "n": 30,
+  "monochromatic_AP_found": null
+}
+ACCEPT: no monochromatic 3-term AP in an 4-colouring of [1,30]; this certifies W(3,4) > 30.
+
+=== python3 mine/verify/checkers/check_vdw_lower.py mine/attacks/bound-vdw-W4-4/witnesses/w43_n40.json ===
+{
+  "k": 3,
+  "r": 4,
+  "n": 40,
+  "monochromatic_AP_found": null
+}
+ACCEPT: no monochromatic 3-term AP in an 4-colouring of [1,40]; this certifies W(3,4) > 40.

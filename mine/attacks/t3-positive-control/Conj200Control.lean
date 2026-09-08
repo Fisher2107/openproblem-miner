@@ -1,0 +1,878 @@
+/-
+  WOWII Conjecture 200 — Lean 4 POSITIVE CONTROL (self-contained, no imports).
+
+  THIS IS NOT A NEW RESULT.  Conjecture 200 of "Written on the Wall II" was already
+  refuted in the literature; this file exists only to demonstrate, end to end, that the
+  mining run's T3 tier can produce a kernel-checked witness for a case whose answer is
+  independently known.
+
+  The conjecture (informal):
+      for every finite simple connected graph G, if tree(G) = ceil(1 + l_avg(G))
+      then G has a Hamiltonian path,
+  where  l(v)      = independence number of the subgraph induced on the open
+                     neighbourhood N(v),
+         l_avg(G)  = average of l(v) over all vertices,
+         tree(G)   = largest order of an induced subgraph that is a tree.
+
+  The graph G below is on 11 vertices; graph6 `J^~~u?_C?O?`.  Its adjacency matrix, as
+  printed by `nauty-listg -a` (rows/columns indexed 0..10), is
+
+        0 0 1 1 1 1 1 1 0 0 0        N(0)  = {2,3,4,5,6,7}
+        0 0 1 1 1 1 1 1 0 0 0        N(1)  = {2,3,4,5,6,7}
+        1 1 0 1 1 1 1 0 1 0 0        N(2)  = {0,1,3,4,5,6,8}
+        1 1 1 0 1 1 1 0 0 1 0        N(3)  = {0,1,2,4,5,6,9}
+        1 1 1 1 0 1 1 0 0 0 1        N(4)  = {0,1,2,3,5,6,10}
+        1 1 1 1 1 0 0 0 0 0 0        N(5)  = {0,1,2,3,4}
+        1 1 1 1 1 0 0 0 0 0 0        N(6)  = {0,1,2,3,4}
+        1 1 0 0 0 0 0 0 0 0 0        N(7)  = {0,1}
+        0 0 1 0 0 0 0 0 0 0 0        N(8)  = {2}
+        0 0 0 1 0 0 0 0 0 0 0        N(9)  = {3}
+        0 0 0 0 1 0 0 0 0 0 0        N(10) = {4}
+
+  (`adj_matches_listg` below re-checks the bitmask encoding against this matrix.)
+-/
+
+set_option maxRecDepth 100000
+set_option linter.unusedVariables false
+
+/-! ## §1  Bounded loop combinators
+
+We roll our own bounded quantifiers as `Nat.rec` folds.  The equation compiler's
+structural recursion goes through `brecOn`, whose kernel reduction is quadratic and
+measured ~25x slower here; `Nat.rec` reduces linearly. -/
+
+/-- `allBelow f n = true`  iff  `f k = true` for every `k < n`. -/
+def allBelow (f : Nat → Bool) (n : Nat) : Bool :=
+  Nat.rec (motive := fun _ => Bool) true (fun k ih => f k && ih) n
+
+/-- `anyBelow f n = true`  iff  `f k = true` for some `k < n`. -/
+def anyBelow (f : Nat → Bool) (n : Nat) : Bool :=
+  Nat.rec (motive := fun _ => Bool) false (fun k ih => f k || ih) n
+
+/-- `sumBelow f n = f 0 + f 1 + ... + f (n-1)`. -/
+def sumBelow (f : Nat → Nat) (n : Nat) : Nat :=
+  Nat.rec (motive := fun _ => Nat) 0 (fun k ih => f k + ih) n
+
+/-- `orBelow f n = f 0 ||| f 1 ||| ... ||| f (n-1)`. -/
+def orBelow (f : Nat → Nat) (n : Nat) : Nat :=
+  Nat.rec (motive := fun _ => Nat) 0 (fun k ih => f k ||| ih) n
+
+theorem allBelow_iff (f : Nat → Bool) (n : Nat) :
+    allBelow f n = true ↔ ∀ k, k < n → f k = true := by
+  induction n with
+  | zero => exact ⟨fun _ k hk => absurd hk (by omega), fun _ => rfl⟩
+  | succ n ih =>
+    show (f n && allBelow f n) = true ↔ _
+    rw [Bool.and_eq_true, ih]
+    constructor
+    · intro h k hk
+      by_cases hkn : k < n
+      · exact h.2 k hkn
+      · have : k = n := by omega
+        subst this; exact h.1
+    · intro h
+      exact ⟨h n (by omega), fun k hk => h k (by omega)⟩
+
+theorem anyBelow_iff (f : Nat → Bool) (n : Nat) :
+    anyBelow f n = true ↔ ∃ k, k < n ∧ f k = true := by
+  induction n with
+  | zero => exact ⟨fun h => absurd h (by simp [anyBelow]), fun h => by
+      obtain ⟨k, hk, _⟩ := h; exact absurd hk (by omega)⟩
+  | succ n ih =>
+    show (f n || anyBelow f n) = true ↔ _
+    rw [Bool.or_eq_true, ih]
+    constructor
+    · intro h
+      cases h with
+      | inl h => exact ⟨n, by omega, h⟩
+      | inr h => obtain ⟨k, hk, hf⟩ := h; exact ⟨k, by omega, hf⟩
+    · intro h
+      obtain ⟨k, hk, hf⟩ := h
+      by_cases hkn : k < n
+      · exact Or.inr ⟨k, hkn, hf⟩
+      · have : k = n := by omega
+        subst this; exact Or.inl hf
+
+/-! ## §2  The graph G -/
+
+/-- `rowMask u` is the neighbourhood of vertex `u` as a bitmask: bit `v` is set iff
+`u` and `v` are adjacent.  Vertices are `0, 1, ..., 10`. -/
+def rowMask (u : Nat) : Nat :=
+  [252, 252, 379, 631, 1135, 31, 31, 3, 4, 8, 16].getD u 0
+
+/-- Adjacency in the finite graph on vertex set `{0,…,n-1}` whose adjacency table is
+`adj`.  This is the *general* notion, used in §10 to state the conjecture itself; the
+graph G of this file is the instance `n = 11`, `adj = adjB`. -/
+def GAdj (n : Nat) (adj : Nat → Nat → Bool) (u v : Nat) : Prop :=
+  u < n ∧ v < n ∧ adj u v = true
+
+/-- The adjacency table of G. -/
+def adjB (u v : Nat) : Bool :=
+  decide (u < 11) && decide (v < 11) && (rowMask u).testBit v
+
+/-- Adjacency in G. -/
+def Adj (u v : Nat) : Prop := GAdj 11 adjB u v
+
+instance instDecAdj (u v : Nat) : Decidable (Adj u v) :=
+  inferInstanceAs (Decidable (u < 11 ∧ v < 11 ∧ adjB u v = true))
+
+theorem adjB_lt {u v : Nat} (h : adjB u v = true) : u < 11 ∧ v < 11 := by
+  rw [adjB, Bool.and_eq_true, Bool.and_eq_true] at h
+  exact ⟨by simpa using h.1.1, by simpa using h.1.2⟩
+
+theorem adj_iff (u v : Nat) : Adj u v ↔ adjB u v = true :=
+  ⟨fun h => h.2.2, fun h => ⟨(adjB_lt h).1, (adjB_lt h).2, h⟩⟩
+
+/-- The adjacency matrix exactly as `nauty-listg -a` prints it for `J^~~u?_C?O?`. -/
+def listgRow (u : Nat) : List Nat :=
+  [[0,0,1,1,1,1,1,1,0,0,0],
+   [0,0,1,1,1,1,1,1,0,0,0],
+   [1,1,0,1,1,1,1,0,1,0,0],
+   [1,1,1,0,1,1,1,0,0,1,0],
+   [1,1,1,1,0,1,1,0,0,0,1],
+   [1,1,1,1,1,0,0,0,0,0,0],
+   [1,1,1,1,1,0,0,0,0,0,0],
+   [1,1,0,0,0,0,0,0,0,0,0],
+   [0,0,1,0,0,0,0,0,0,0,0],
+   [0,0,0,1,0,0,0,0,0,0,0],
+   [0,0,0,0,1,0,0,0,0,0,0]].getD u []
+
+/-- The bitmask encoding agrees with the printed adjacency matrix. -/
+theorem adj_matches_listg :
+    allBelow (fun u => allBelow (fun v =>
+      (listgRow u).getD v 0 == (bif adjB u v then 1 else 0)) 11) 11 = true := by
+  decide
+
+/-- G is simple: no loops. -/
+theorem adj_irrefl_B : allBelow (fun u => !(adjB u u)) 11 = true := by decide
+
+/-- G is undirected. -/
+theorem adj_symm_B :
+    allBelow (fun u => allBelow (fun v => !(adjB u v) || adjB v u) 11) 11 = true := by decide
+
+theorem adj_symm {u v : Nat} (h : Adj u v) : Adj v u := by
+  have hu := h.1
+  have hv := h.2.1
+  have hB : adjB u v = true := (adj_iff u v).1 h
+  have h1 := (allBelow_iff _ _).1 ((allBelow_iff _ _).1 adj_symm_B u hu) v hv
+  rw [hB] at h1
+  simp at h1
+  exact (adj_iff v u).2 h1
+
+theorem adj_lt {u v : Nat} (h : Adj u v) : u < 11 ∧ v < 11 := ⟨h.1, h.2.1⟩
+
+/-! ## §3  Part 1 of the theorem: G is connected -/
+
+/-- `Reach u v`: there is a walk in G from `u` to `v`. -/
+inductive Reach : Nat → Nat → Prop
+  | refl (u : Nat) : Reach u u
+  | step {u v w : Nat} : Adj u v → Reach v w → Reach u w
+
+theorem Reach.trans : ∀ {a b c : Nat}, Reach a b → Reach b c → Reach a c
+  | _, _, _, .refl _, h => h
+  | _, _, _, .step hadj hr, h => .step hadj (Reach.trans hr h)
+
+/-- G is connected: every vertex is joined to every vertex by a walk. -/
+def Connected : Prop := ∀ u, u < 11 → ∀ v, v < 11 → Reach u v
+
+theorem reach_to_zero : ∀ u, u < 11 → Reach u 0 := by
+  intro u hu
+  match u, hu with
+  | 0, _ => exact .refl 0
+  | 1, _ => exact .step (show Adj 1 2 by decide) (.step (show Adj 2 0 by decide) (.refl 0))
+  | 2, _ => exact .step (show Adj 2 0 by decide) (.refl 0)
+  | 3, _ => exact .step (show Adj 3 0 by decide) (.refl 0)
+  | 4, _ => exact .step (show Adj 4 0 by decide) (.refl 0)
+  | 5, _ => exact .step (show Adj 5 0 by decide) (.refl 0)
+  | 6, _ => exact .step (show Adj 6 0 by decide) (.refl 0)
+  | 7, _ => exact .step (show Adj 7 0 by decide) (.refl 0)
+  | 8, _ => exact .step (show Adj 8 2 by decide) (.step (show Adj 2 0 by decide) (.refl 0))
+  | 9, _ => exact .step (show Adj 9 3 by decide) (.step (show Adj 3 0 by decide) (.refl 0))
+  | 10, _ => exact .step (show Adj 10 4 by decide) (.step (show Adj 4 0 by decide) (.refl 0))
+
+theorem reach_from_zero : ∀ v, v < 11 → Reach 0 v := by
+  intro v hv
+  match v, hv with
+  | 0, _ => exact .refl 0
+  | 1, _ => exact .step (show Adj 0 2 by decide) (.step (show Adj 2 1 by decide) (.refl 1))
+  | 2, _ => exact .step (show Adj 0 2 by decide) (.refl 2)
+  | 3, _ => exact .step (show Adj 0 3 by decide) (.refl 3)
+  | 4, _ => exact .step (show Adj 0 4 by decide) (.refl 4)
+  | 5, _ => exact .step (show Adj 0 5 by decide) (.refl 5)
+  | 6, _ => exact .step (show Adj 0 6 by decide) (.refl 6)
+  | 7, _ => exact .step (show Adj 0 7 by decide) (.refl 7)
+  | 8, _ => exact .step (show Adj 0 2 by decide) (.step (show Adj 2 8 by decide) (.refl 8))
+  | 9, _ => exact .step (show Adj 0 3 by decide) (.step (show Adj 3 9 by decide) (.refl 9))
+  | 10, _ => exact .step (show Adj 0 4 by decide) (.step (show Adj 4 10 by decide) (.refl 10))
+
+theorem G_connected : Connected :=
+  fun u hu v hv => (reach_to_zero u hu).trans (reach_from_zero v hv)
+
+/-! ## §4  Vertex sets as bitmasks
+
+A vertex set is encoded by a natural number `m < 2^11 = 2048`: vertex `v` (with `v < 11`)
+belongs to the set iff bit `v` of `m` is set.  This is a bijection between the naturals
+below 2048 and the subsets of `{0,...,10}`. -/
+
+/-- Vertex `v` belongs to the vertex set encoded by the bitmask `m`. -/
+def InMask (m v : Nat) : Prop := m.testBit v = true
+
+instance instDecInMask (m v : Nat) : Decidable (InMask m v) :=
+  inferInstanceAs (Decidable (m.testBit v = true))
+
+theorem testBit_big {m u : Nat} (h : m < 2048) (hu : 11 ≤ u) : m.testBit u = false := by
+  have h1 : m >>> u = 0 := by
+    rw [Nat.shiftRight_eq_div_pow]
+    apply Nat.div_eq_of_lt
+    calc m < 2048 := h
+      _ = 2 ^ 11 := by rfl
+      _ ≤ 2 ^ u := Nat.pow_le_pow_right (by omega) hu
+  simp [Nat.testBit, h1]
+
+theorem inMask_lt {m u : Nat} (hm : m < 2048) (h : InMask m u) : u < 11 := by
+  cases Nat.lt_or_ge u 11 with
+  | inl h' => exact h'
+  | inr h' =>
+    rw [InMask, testBit_big hm h'] at h
+    exact Bool.noConfusion h
+
+/-- The number of vertices in the vertex set `m`. -/
+def card (m : Nat) : Nat := sumBelow (fun v => bif m.testBit v then 1 else 0) 11
+
+/-- The number of edges of G having both endpoints in the vertex set `m`, i.e. the number
+of edges of the subgraph of G induced on `m`. -/
+def edgeCount (m : Nat) : Nat :=
+  sumBelow (fun v => sumBelow (fun u =>
+    bif m.testBit u && m.testBit v && adjB u v then 1 else 0) v) 11
+
+/-- `ReachIn m u v`: there is a walk in G from `u` to `v` all of whose vertices lie in the
+vertex set `m`; i.e. `u` reaches `v` in the subgraph induced on `m`. -/
+inductive ReachIn (m : Nat) : Nat → Nat → Prop
+  | refl {u} : u < 11 → InMask m u → ReachIn m u u
+  | step {u v w} : u < 11 → InMask m u → Adj u v → ReachIn m v w → ReachIn m u w
+
+/-- The subgraph of G induced on the vertex set `m` is connected. -/
+def ConnectedIn (m : Nat) : Prop := ∀ u v, InMask m u → InMask m v → ReachIn m u v
+
+theorem ReachIn.trans {m : Nat} : ∀ {a b c : Nat}, ReachIn m a b → ReachIn m b c → ReachIn m a c
+  | _, _, _, .refl _ _, h => h
+  | _, _, _, .step h1 h2 hadj hr, h => .step h1 h2 hadj (ReachIn.trans hr h)
+
+theorem reachIn_head {m u w : Nat} (h : ReachIn m u w) : u < 11 ∧ InMask m u := by
+  cases h with
+  | refl h1 h2 => exact ⟨h1, h2⟩
+  | step h1 h2 _ _ => exact ⟨h1, h2⟩
+
+/-- If `C` is closed under taking neighbours inside `m`, no walk inside `m` can leave it. -/
+theorem reach_stays {m C : Nat}
+    (hcl : ∀ x y, x < 11 → y < 11 → InMask C x → InMask m y → Adj x y → InMask C y)
+    {u w : Nat} (h : ReachIn m u w) : InMask C u → InMask C w := by
+  induction h with
+  | refl _ _ => exact fun hu => hu
+  | step hu hum hadj hrest ih =>
+    intro hC
+    exact ih (hcl _ _ hu hadj.2.1 hC (reachIn_head hrest).2 hadj)
+
+/-! ### A checkable certificate for "the induced subgraph on `m` is disconnected" -/
+
+/-- One round of neighbour expansion of the vertex set `s`, staying inside `m`. -/
+def expand (m s : Nat) : Nat :=
+  s ||| (orBelow (fun k => bif s.testBit k then rowMask k else 0) 11 &&& m)
+
+/-- The connected component of `u` inside `m` (11 rounds saturate on 11 vertices). -/
+def compOf (m u : Nat) : Nat :=
+  Nat.rec (motive := fun _ => Nat) (1 <<< u) (fun _ s => expand m s) 11
+
+/-- Some vertex of `m` (the largest one), or `11` if `m` contains no vertex. -/
+def someVert (m : Nat) : Nat :=
+  Nat.rec (motive := fun _ => Nat) 11 (fun k ih => bif m.testBit k then k else ih) 11
+
+/-- `C` is closed under taking neighbours inside `m`. -/
+def closedB (m C : Nat) : Bool :=
+  allBelow (fun x => allBelow (fun y =>
+    !(C.testBit x) || !(m.testBit y) || !(adjB x y) || C.testBit y) 11) 11
+
+theorem closedB_spec {m C : Nat} (h : closedB m C = true) :
+    ∀ x y, x < 11 → y < 11 → InMask C x → InMask m y → Adj x y → InMask C y := by
+  intro x y hx hy hCx hmy hadj
+  have hb := (allBelow_iff _ _).1 ((allBelow_iff _ _).1 h x hx) y hy
+  rw [InMask] at hCx hmy ⊢
+  rw [hCx, hmy, (adj_iff x y).1 hadj] at hb
+  simpa using hb
+
+/-- A checkable certificate that the subgraph induced on `m` is disconnected: some vertex
+`u` of `m` lies in a set `C` closed under neighbours inside `m`, and some vertex of `m`
+lies outside `C`. -/
+def disconCert (m : Nat) : Bool :=
+  m.testBit (someVert m) && (compOf m (someVert m)).testBit (someVert m) &&
+    closedB m (compOf m (someVert m)) &&
+    anyBelow (fun v => m.testBit v && !((compOf m (someVert m)).testBit v)) 11
+
+theorem not_connectedIn_of_cert {m : Nat} (h : disconCert m = true) : ¬ ConnectedIn m := by
+  intro hconn
+  rw [disconCert, Bool.and_eq_true, Bool.and_eq_true, Bool.and_eq_true] at h
+  obtain ⟨⟨⟨h1, h2⟩, h3⟩, h4⟩ := h
+  obtain ⟨v, hv11, hv⟩ := (anyBelow_iff _ _).1 h4
+  rw [Bool.and_eq_true] at hv
+  have hvm : InMask m v := hv.1
+  have key : InMask (compOf m (someVert m)) v :=
+    reach_stays (closedB_spec h3) (hconn _ _ h1 hvm) h2
+  rw [InMask] at key
+  rw [key] at hv
+  simp at hv
+
+/-! ## §5  Part 2 of the theorem: tree(G) = 4
+
+`IsInducedTree m` says that the subgraph induced on the vertex set `m` is a tree.  We use
+the standard finite-graph characterisation "nonempty, connected, and with exactly one edge
+fewer than it has vertices", which for a finite graph is equivalent to "connected and
+acyclic".  (See log.md: this equivalence is a classical theorem that is *not* formalised
+here, so it is an assumption built into the encoding of the word "tree".) -/
+def IsInducedTree (m : Nat) : Prop :=
+  0 < card m ∧ ConnectedIn m ∧ edgeCount m + 1 = card m
+
+/-- `tree(G) = k`: some induced subgraph on `k` vertices is a tree, and no induced
+subgraph that is a tree has more than `k` vertices. -/
+def TreeNumber (k : Nat) : Prop :=
+  (∃ m, m < 2048 ∧ IsInducedTree m ∧ card m = k) ∧
+  (∀ m, m < 2048 → IsInducedTree m → card m ≤ k)
+
+/-- For every vertex set `m`: either it has at most 4 vertices, or it does not have
+`|V| - 1` edges, or it is certifiably disconnected. -/
+def treeChk (m : Nat) : Bool :=
+  decide (card m ≤ 4) || !(decide (edgeCount m + 1 = card m)) || disconCert m
+
+theorem treeChk_all : allBelow treeChk 2048 = true := by decide +kernel
+
+theorem tree_upper : ∀ m, m < 2048 → IsInducedTree m → card m ≤ 4 := by
+  intro m hm ht
+  cases Nat.lt_or_ge 4 (card m) with
+  | inr h => omega
+  | inl h =>
+    have hb := (allBelow_iff _ _).1 treeChk_all m hm
+    rw [treeChk] at hb
+    have e1 : decide (card m ≤ 4) = false := by simp; omega
+    have e2 : decide (edgeCount m + 1 = card m) = true := by simp [ht.2.2]
+    rw [e1, e2] at hb
+    simp at hb
+    exact absurd ht.2.1 (not_connectedIn_of_cert hb)
+
+/-- The vertex set `{0,5,6,7}` (bitmask 225) induces a tree: the star with centre 0. -/
+theorem mem225 : ∀ u, InMask 225 u → u = 0 ∨ u = 5 ∨ u = 6 ∨ u = 7 := by
+  intro u h
+  have hu : u < 11 := inMask_lt (by omega) h
+  revert h
+  match u, hu with
+  | 0, _ => exact fun _ => Or.inl rfl
+  | 1, _ => exact fun h => absurd h (by decide)
+  | 2, _ => exact fun h => absurd h (by decide)
+  | 3, _ => exact fun h => absurd h (by decide)
+  | 4, _ => exact fun h => absurd h (by decide)
+  | 5, _ => exact fun _ => Or.inr (Or.inl rfl)
+  | 6, _ => exact fun _ => Or.inr (Or.inr (Or.inl rfl))
+  | 7, _ => exact fun _ => Or.inr (Or.inr (Or.inr rfl))
+  | 8, _ => exact fun h => absurd h (by decide)
+  | 9, _ => exact fun h => absurd h (by decide)
+  | 10, _ => exact fun h => absurd h (by decide)
+
+theorem conn225 : ConnectedIn 225 := by
+  have h0 : ∀ u, InMask 225 u → ReachIn 225 u 0 := by
+    intro u h
+    rcases mem225 u h with rfl | rfl | rfl | rfl
+    · exact .refl (by decide) (by decide)
+    · exact .step (by decide) (by decide) (show Adj 5 0 by decide) (.refl (by decide) (by decide))
+    · exact .step (by decide) (by decide) (show Adj 6 0 by decide) (.refl (by decide) (by decide))
+    · exact .step (by decide) (by decide) (show Adj 7 0 by decide) (.refl (by decide) (by decide))
+  have h1 : ∀ v, InMask 225 v → ReachIn 225 0 v := by
+    intro v h
+    rcases mem225 v h with rfl | rfl | rfl | rfl
+    · exact .refl (by decide) (by decide)
+    · exact .step (by decide) (by decide) (show Adj 0 5 by decide) (.refl (by decide) (by decide))
+    · exact .step (by decide) (by decide) (show Adj 0 6 by decide) (.refl (by decide) (by decide))
+    · exact .step (by decide) (by decide) (show Adj 0 7 by decide) (.refl (by decide) (by decide))
+  exact fun u v hu hv => (h0 u hu).trans (h1 v hv)
+
+theorem G_treeNumber : TreeNumber 4 :=
+  ⟨⟨225, by omega, ⟨by decide, conn225, by decide⟩, by decide⟩, tree_upper⟩
+
+/-! ## §6  Part 3 of the theorem: the l-values and their sum
+
+`l(v)` is the independence number of the subgraph induced on the open neighbourhood `N(v)`.
+Since that subgraph is *induced*, a set of vertices of `N(v)` is independent in it exactly
+when it is independent in G, so `l v = k` says: some `k`-element set of pairwise
+non-adjacent neighbours of `v` exists, and no larger one does. -/
+
+/-- Every vertex of the set `m` is a neighbour of `v`, i.e. `m ⊆ N(v)`. -/
+def SubNbhd (v m : Nat) : Prop := ∀ u, u < 11 → InMask m u → Adj v u
+
+/-- The vertices of the set `m` are pairwise non-adjacent. -/
+def Indep (m : Nat) : Prop :=
+  ∀ u w, u < 11 → w < 11 → InMask m u → InMask m w → u ≠ w → ¬ Adj u w
+
+/-- `LVal v k` says `l(v) = k`. -/
+def LVal (v k : Nat) : Prop :=
+  (∃ m, m < 2048 ∧ SubNbhd v m ∧ Indep m ∧ card m = k) ∧
+  (∀ m, m < 2048 → SubNbhd v m → Indep m → card m ≤ k)
+
+def subNbhdB (v m : Nat) : Bool := allBelow (fun u => !(m.testBit u) || adjB v u) 11
+
+def indepB (m : Nat) : Bool :=
+  allBelow (fun u => allBelow (fun w =>
+    !(m.testBit u) || !(m.testBit w) || decide (u = w) || !(adjB u w)) 11) 11
+
+theorem subNbhd_iff (v m : Nat) : SubNbhd v m ↔ subNbhdB v m = true := by
+  rw [subNbhdB, allBelow_iff]
+  constructor
+  · intro h u hu
+    cases hb : m.testBit u with
+    | false => simp
+    | true =>
+      have hA := (adj_iff v u).1 (h u hu hb)
+      simp [hA]
+  · intro h u hu hm
+    have hb := h u hu
+    rw [InMask] at hm
+    rw [hm] at hb
+    simp at hb
+    exact (adj_iff v u).2 hb
+
+theorem indep_iff (m : Nat) : Indep m ↔ indepB m = true := by
+  rw [indepB, allBelow_iff]
+  constructor
+  · intro h u hu
+    rw [allBelow_iff]
+    intro w hw
+    cases hbu : m.testBit u with
+    | false => simp
+    | true =>
+      cases hbw : m.testBit w with
+      | false => simp
+      | true =>
+        cases hEq : decide (u = w) with
+        | true => simp
+        | false =>
+          have hne : u ≠ w := by simpa using hEq
+          have hnot := h u w hu hw hbu hbw hne
+          have h2 : adjB u w = false := by
+            cases hab : adjB u w with
+            | false => rfl
+            | true => exact absurd ((adj_iff u w).2 hab) hnot
+          simp [h2]
+  · intro h u w hu hw hmu hmw hne hadj
+    have hb := (allBelow_iff _ _).1 (h u hu) w hw
+    rw [InMask] at hmu hmw
+    have hd : decide (u = w) = false := by simp [hne]
+    rw [hmu, hmw, hd, (adj_iff u w).1 hadj] at hb
+    simp at hb
+
+/-- For every vertex set `m`: if `m ⊆ N(v)` and `m` is independent then `|m| ≤ k`. -/
+def lChk (v k : Nat) (m : Nat) : Bool :=
+  !(subNbhdB v m) || !(indepB m) || decide (card m ≤ k)
+
+theorem lVal_of {v k mw : Nat} (hw : mw < 2048) (h1 : subNbhdB v mw = true)
+    (h2 : indepB mw = true) (h3 : card mw = k)
+    (hall : allBelow (lChk v k) 2048 = true) : LVal v k := by
+  refine ⟨⟨mw, hw, (subNbhd_iff v mw).2 h1, (indep_iff mw).2 h2, h3⟩, ?_⟩
+  intro m hm hs hi
+  have hb := (allBelow_iff _ _).1 hall m hm
+  rw [lChk, (subNbhd_iff v m).1 hs, (indep_iff m).1 hi] at hb
+  simpa using hb
+
+-- witnesses: {5,6,7} for v=0,1;  {0,1,8} for v=2;  {0,1,9} for v=3;  {0,1,10} for v=4;
+--            {0,1} for v=5,6,7;  {2},{3},{4} for v=8,9,10.
+theorem l_0  : LVal 0  3 := lVal_of (mw := 224)  (by omega) (by decide) (by decide) (by decide) (by decide +kernel)
+theorem l_1  : LVal 1  3 := lVal_of (mw := 224)  (by omega) (by decide) (by decide) (by decide) (by decide +kernel)
+theorem l_2  : LVal 2  3 := lVal_of (mw := 259)  (by omega) (by decide) (by decide) (by decide) (by decide +kernel)
+theorem l_3  : LVal 3  3 := lVal_of (mw := 515)  (by omega) (by decide) (by decide) (by decide) (by decide +kernel)
+theorem l_4  : LVal 4  3 := lVal_of (mw := 1027) (by omega) (by decide) (by decide) (by decide) (by decide +kernel)
+theorem l_5  : LVal 5  2 := lVal_of (mw := 3)    (by omega) (by decide) (by decide) (by decide) (by decide +kernel)
+theorem l_6  : LVal 6  2 := lVal_of (mw := 3)    (by omega) (by decide) (by decide) (by decide) (by decide +kernel)
+theorem l_7  : LVal 7  2 := lVal_of (mw := 3)    (by omega) (by decide) (by decide) (by decide) (by decide +kernel)
+theorem l_8  : LVal 8  1 := lVal_of (mw := 4)    (by omega) (by decide) (by decide) (by decide) (by decide +kernel)
+theorem l_9  : LVal 9  1 := lVal_of (mw := 8)    (by omega) (by decide) (by decide) (by decide) (by decide +kernel)
+theorem l_10 : LVal 10 1 := lVal_of (mw := 16)   (by omega) (by decide) (by decide) (by decide) (by decide +kernel)
+
+/-! ## §7  Part 4 of the theorem: G has no Hamiltonian path -/
+
+/-- `Chain' R l`: consecutive entries of `l` are related by `R`. -/
+inductive Chain' (R : Nat → Nat → Prop) : List Nat → Prop
+  | nil : Chain' R []
+  | single (a : Nat) : Chain' R [a]
+  | cons {a b : Nat} {l : List Nat} : R a b → Chain' R (b :: l) → Chain' R (a :: b :: l)
+
+/-- `Nodup l`: no entry of `l` occurs twice. -/
+inductive Nodup : List Nat → Prop
+  | nil : Nodup []
+  | cons {a : Nat} {l : List Nat} : a ∉ l → Nodup l → Nodup (a :: l)
+
+def firstOf : List Nat → Option Nat
+  | [] => none
+  | a :: _ => some a
+
+def lastOf : List Nat → Option Nat
+  | [] => none
+  | [a] => some a
+  | _ :: t => lastOf t
+
+theorem lastOf_cons_cons (x y : Nat) (t : List Nat) :
+    lastOf (x :: y :: t) = lastOf (y :: t) := rfl
+
+/-- `l` is a Hamiltonian path of G: its entries are pairwise distinct, consecutive entries
+are adjacent, and every vertex of G occurs in it. -/
+def IsHamPath (l : List Nat) : Prop :=
+  Nodup l ∧ Chain' Adj l ∧ (∀ v, v < 11 → v ∈ l)
+
+/-- If every neighbour of `v` equals `w`, then `v` has at most one neighbour. -/
+theorem uniq_nbr {v w : Nat}
+    (hb : allBelow (fun z => !(adjB v z) || decide (z = w)) 11 = true) :
+    ∀ x y, Adj v x → Adj v y → x = y := by
+  intro x y hx hy
+  have h1 := (allBelow_iff _ _).1 hb x hx.2.1
+  have h2 := (allBelow_iff _ _).1 hb y hy.2.1
+  rw [(adj_iff v x).1 hx] at h1
+  rw [(adj_iff v y).1 hy] at h2
+  simp at h1 h2
+  omega
+
+/-- **The endpoint lemma.**  A vertex with at most one neighbour can only occur as the
+first or the last entry of a path: at an interior position it would have two distinct
+neighbours in the list. -/
+theorem deg_one_endpoint {v : Nat} (huniq : ∀ x y, Adj v x → Adj v y → x = y) :
+    ∀ l : List Nat, Chain' Adj l → Nodup l → v ∈ l →
+      firstOf l = some v ∨ lastOf l = some v := by
+  intro l
+  induction l with
+  | nil => intro _ _ hv; nomatch hv
+  | cons x t ih =>
+    intro hc hn hv
+    cases t with
+    | nil =>
+      left
+      cases hv with
+      | head => rfl
+      | tail _ h => nomatch h
+    | cons y t' =>
+      have hxy : Adj x y := by cases hc with | cons h _ => exact h
+      have hcy : Chain' Adj (y :: t') := by cases hc with | cons _ h => exact h
+      have hxn : x ∉ y :: t' := by cases hn with | cons h _ => exact h
+      have hny : Nodup (y :: t') := by cases hn with | cons _ h => exact h
+      cases Nat.decEq v x with
+      | isTrue hvx => left; rw [firstOf, hvx]
+      | isFalse hvx =>
+        have hvt : v ∈ y :: t' := by
+          cases hv with
+          | head => exact absurd rfl hvx
+          | tail _ h => exact h
+        cases ih hcy hny hvt with
+        | inr h => right; rw [lastOf_cons_cons]; exact h
+        | inl h =>
+          have hvy : v = y := by
+            have : some v = some y := by rw [← h]; rfl
+            exact Option.some.inj this
+          cases t' with
+          | nil => right; rw [lastOf_cons_cons, hvy]; rfl
+          | cons z t'' =>
+            exfalso
+            have hyz : Adj y z := by cases hcy with | cons h _ => exact h
+            have h1 : Adj v x := by rw [hvy]; exact adj_symm hxy
+            have h2 : Adj v z := by rw [hvy]; exact hyz
+            have hxz : x = z := huniq x z h1 h2
+            exact hxn (by rw [hxz]; exact List.Mem.tail _ (List.Mem.head _))
+
+theorem no_ham_path : ¬ ∃ l : List Nat, IsHamPath l := by
+  intro h
+  obtain ⟨l, hn, hc, hall⟩ := h
+  have e8 := deg_one_endpoint (uniq_nbr (v := 8) (w := 2) (by decide)) l hc hn (hall 8 (by omega))
+  have e9 := deg_one_endpoint (uniq_nbr (v := 9) (w := 3) (by decide)) l hc hn (hall 9 (by omega))
+  have e10 := deg_one_endpoint (uniq_nbr (v := 10) (w := 4) (by decide)) l hc hn (hall 10 (by omega))
+  -- three vertices of degree 1, but a path has only two endpoints
+  have key : ∀ (o : Option Nat) (p q : Nat), o = some p → o = some q → p = q := by
+    intro o p q h1 h2
+    rw [h1] at h2
+    exact Option.some.inj h2
+  rcases e8 with a | a <;> rcases e9 with b | b <;> rcases e10 with c | c
+  · exact absurd (key _ _ _ a b) (by decide)
+  · exact absurd (key _ _ _ a b) (by decide)
+  · exact absurd (key _ _ _ a c) (by decide)
+  · exact absurd (key _ _ _ b c) (by decide)
+  · exact absurd (key _ _ _ b c) (by decide)
+  · exact absurd (key _ _ _ a c) (by decide)
+  · exact absurd (key _ _ _ a b) (by decide)
+  · exact absurd (key _ _ _ a b) (by decide)
+
+/-! ## §8  Sanity checks (non-vacuity)
+
+None of these is needed for the counterexample.  They guard against the definitions being
+accidentally unsatisfiable or trivially true, which would make the main theorem true for
+the wrong reason. -/
+
+/-- The whole vertex set: 11 vertices, 24 edges — matching the `nauty-listg` matrix. -/
+theorem whole_graph_card : card 2047 = 11 := by decide
+theorem whole_graph_edges : edgeCount 2047 = 24 := by decide
+
+/-- The witness `{0,5,6,7}`: 4 vertices, 3 edges (the star with centre 0). -/
+theorem witness_card_edges : card 225 = 4 ∧ edgeCount 225 = 3 := by decide
+
+/-- The disconnection certificate is not vacuously true: it rejects the connected set
+`{0,5,6,7}` and accepts the disconnected set `{8,9}`. -/
+theorem cert_rejects_connected : disconCert 225 = false := by decide
+theorem cert_accepts_disconnected : disconCert 768 = true := by decide
+
+/-- G *does* have a path through 10 of its 11 vertices, namely `8-2-0-7-1-5-3-6-4-10`.
+So the `Nodup`/`Chain' Adj` machinery is satisfiable by real paths of G: what
+`no_ham_path` rules out is the eleventh vertex, not a broken definition. -/
+theorem near_ham_nodup : Nodup [8,2,0,7,1,5,3,6,4,10] := by
+  repeat (apply Nodup.cons (by decide))
+  exact Nodup.nil
+
+theorem near_ham_chain : Chain' Adj [8,2,0,7,1,5,3,6,4,10] := by
+  repeat (apply Chain'.cons (by decide))
+  exact Chain'.single 10
+
+
+/-! ## §9  G is a counterexample to WOWII Conjecture 200
+
+The conjecture asserts: for every finite simple connected graph G, if
+`tree(G) = ⌈1 + l_avg(G)⌉` then G has a Hamiltonian path.
+
+Here `n = 11` and `sum of l(v) = 3+3+3+3+3+2+2+2+1+1+1 = 24`, so `l_avg = 24/11` and
+`⌈1 + 24/11⌉ = 1 + ⌈24/11⌉ = 1 + 3 = 4 = tree(G)`: the hypothesis holds, but G has no
+Hamiltonian path.
+
+Real numbers are avoided.  Over the naturals, `⌈a/b⌉ = (a + b - 1) / b` with truncating
+division, and adding the *integer* 1 commutes with the ceiling, so
+`⌈1 + l_avg(G)⌉` is rendered as `1 + (sumL + n - 1) / n`; with `sumL = 24, n = 11` that is
+`1 + 34/11 = 1 + 3 = 4`. -/
+
+/-- The value of `l(v)` for each vertex `v`, as proved in §6. -/
+def lOf (v : Nat) : Nat := [3, 3, 3, 3, 3, 2, 2, 2, 1, 1, 1].getD v 0
+
+theorem l_all : ∀ v, v < 11 → LVal v (lOf v) := by
+  intro v hv
+  match v, hv with
+  | 0, _ => exact l_0
+  | 1, _ => exact l_1
+  | 2, _ => exact l_2
+  | 3, _ => exact l_3
+  | 4, _ => exact l_4
+  | 5, _ => exact l_5
+  | 6, _ => exact l_6
+  | 7, _ => exact l_7
+  | 8, _ => exact l_8
+  | 9, _ => exact l_9
+  | 10, _ => exact l_10
+
+/-- The sum of the eleven l-values. -/
+theorem sum_l : sumBelow lOf 11 = 24 := by decide
+
+/-- **Main theorem.**  G is a counterexample to WOWII Conjecture 200.
+
+Read back into English:
+ * `Connected` — G is connected (§3);
+ * `∀ v < 11, LVal v (lOf v)` — for each of the eleven vertices, `l(v)` (the independence
+   number of the subgraph induced on `N(v)`) is the value listed in `lOf` (§6);
+ * `TreeNumber t` with `t = 1 + (Σ l(v) + 11 - 1) / 11` — the largest order of an induced
+   subgraph of G that is a tree equals `⌈1 + l_avg(G)⌉`, so the hypothesis of the
+   conjecture holds (§5);
+ * `¬ ∃ l, IsHamPath l` — no list of vertices is a Hamiltonian path of G (§7).
+-/
+theorem conj200_counterexample :
+    Connected ∧
+    (∀ v, v < 11 → LVal v (lOf v)) ∧
+    (∃ t, TreeNumber t ∧ t = 1 + (sumBelow lOf 11 + 11 - 1) / 11) ∧
+    (¬ ∃ l : List Nat, IsHamPath l) :=
+  ⟨G_connected, l_all, ⟨4, G_treeNumber, by decide⟩, no_ham_path⟩
+
+/-- The same statement with the numbers spelled out, for readability. -/
+theorem conj200_counterexample_explicit :
+    Connected ∧
+    TreeNumber 4 ∧
+    (LVal 0 3 ∧ LVal 1 3 ∧ LVal 2 3 ∧ LVal 3 3 ∧ LVal 4 3 ∧ LVal 5 2 ∧ LVal 6 2 ∧
+      LVal 7 2 ∧ LVal 8 1 ∧ LVal 9 1 ∧ LVal 10 1) ∧
+    (3 + 3 + 3 + 3 + 3 + 2 + 2 + 2 + 1 + 1 + 1 = 24) ∧
+    (4 = 1 + (24 + 11 - 1) / 11) ∧
+    (¬ ∃ l : List Nat, IsHamPath l) :=
+  ⟨G_connected, G_treeNumber,
+   ⟨l_0, l_1, l_2, l_3, l_4, l_5, l_6, l_7, l_8, l_9, l_10⟩,
+   by decide, by decide, no_ham_path⟩
+
+#print axioms conj200_counterexample
+#print axioms conj200_counterexample_explicit
+#print axioms G_connected
+#print axioms G_treeNumber
+#print axioms l_all
+#print axioms no_ham_path
+#print axioms adj_matches_listg
+
+/-! ## §10  The conjecture itself, and its refutation
+
+Everything above is about one fixed graph.  This section states WOWII Conjecture 200 as a
+single universally quantified proposition about *arbitrary* finite simple graphs, and
+refutes it by instantiating at G.  A graph on the vertex set `{0,…,n-1}` is given by its
+adjacency table `adj : Nat → Nat → Bool`. -/
+
+/-- `adj` is the adjacency table of a finite simple graph on the vertex set `{0,…,n-1}`:
+its edges join vertices below `n`, it is undirected, and it has no loops. -/
+def WellFormed (n : Nat) (adj : Nat → Nat → Bool) : Prop :=
+  (∀ u v, adj u v = true → u < n ∧ v < n) ∧
+  (∀ u v, adj u v = adj v u) ∧
+  (∀ u, adj u u = false)
+
+/-- There is a walk from `u` to `v`. -/
+inductive GReach (n : Nat) (adj : Nat → Nat → Bool) : Nat → Nat → Prop
+  | refl (u : Nat) : GReach n adj u u
+  | step {u v w : Nat} : GAdj n adj u v → GReach n adj v w → GReach n adj u w
+
+/-- The graph is connected. -/
+def GConnected (n : Nat) (adj : Nat → Nat → Bool) : Prop :=
+  ∀ u, u < n → ∀ v, v < n → GReach n adj u v
+
+/-- Number of vertices in the vertex set encoded by the bitmask `m`. -/
+def Gcard (n : Nat) (m : Nat) : Nat := sumBelow (fun v => bif m.testBit v then 1 else 0) n
+
+/-- Number of edges of the subgraph induced on the vertex set `m`. -/
+def GedgeCount (n : Nat) (adj : Nat → Nat → Bool) (m : Nat) : Nat :=
+  sumBelow (fun v => sumBelow (fun u =>
+    bif m.testBit u && m.testBit v && adj u v then 1 else 0) v) n
+
+/-- There is a walk from `u` to `v` inside the vertex set `m`. -/
+inductive GReachIn (n : Nat) (adj : Nat → Nat → Bool) (m : Nat) : Nat → Nat → Prop
+  | refl {u} : u < n → m.testBit u = true → GReachIn n adj m u u
+  | step {u v w} : u < n → m.testBit u = true → GAdj n adj u v →
+      GReachIn n adj m v w → GReachIn n adj m u w
+
+/-- The subgraph induced on the vertex set `m` is connected. -/
+def GConnectedIn (n : Nat) (adj : Nat → Nat → Bool) (m : Nat) : Prop :=
+  ∀ u v, m.testBit u = true → m.testBit v = true → GReachIn n adj m u v
+
+/-- The subgraph induced on `m` is a tree.
+
+DEFINITIONAL CHOICE, stated plainly: "tree" is encoded here as *nonempty, connected, and
+with exactly one edge fewer than it has vertices*.  For a finite graph this is the standard
+equivalent of "connected and acyclic", but the equivalence is a classical theorem that this
+file does NOT prove — accepting it is part of accepting this definition.  See log.md,
+gap M1, and `tree_number_crosscheck.py` for an external check that the two agree for G. -/
+def GIsInducedTree (n : Nat) (adj : Nat → Nat → Bool) (m : Nat) : Prop :=
+  0 < Gcard n m ∧ GConnectedIn n adj m ∧ GedgeCount n adj m + 1 = Gcard n m
+
+/-- `tree(G) = k`: the largest order of an induced subgraph that is a tree is `k`.
+Vertex sets are the bitmasks below `2 ^ n`, i.e. exactly the subsets of `{0,…,n-1}`. -/
+def GTreeNumber (n : Nat) (adj : Nat → Nat → Bool) (k : Nat) : Prop :=
+  (∃ m, m < 2 ^ n ∧ GIsInducedTree n adj m ∧ Gcard n m = k) ∧
+  (∀ m, m < 2 ^ n → GIsInducedTree n adj m → Gcard n m ≤ k)
+
+/-- Every vertex of `m` is a neighbour of `v`. -/
+def GSubNbhd (n : Nat) (adj : Nat → Nat → Bool) (v m : Nat) : Prop :=
+  ∀ u, u < n → m.testBit u = true → GAdj n adj v u
+
+/-- The vertices of `m` are pairwise non-adjacent. -/
+def GIndep (n : Nat) (adj : Nat → Nat → Bool) (m : Nat) : Prop :=
+  ∀ u w, u < n → w < n → m.testBit u = true → m.testBit w = true → u ≠ w → ¬ GAdj n adj u w
+
+/-- `l(v) = k`: the independence number of the subgraph induced on `N(v)` is `k`. -/
+def GLVal (n : Nat) (adj : Nat → Nat → Bool) (v k : Nat) : Prop :=
+  (∃ m, m < 2 ^ n ∧ GSubNbhd n adj v m ∧ GIndep n adj m ∧ Gcard n m = k) ∧
+  (∀ m, m < 2 ^ n → GSubNbhd n adj v m → GIndep n adj m → Gcard n m ≤ k)
+
+/-- `l` is a Hamiltonian path: no repetitions, consecutive entries adjacent, every vertex
+occurs. -/
+def GIsHamPath (n : Nat) (adj : Nat → Nat → Bool) (l : List Nat) : Prop :=
+  Nodup l ∧ Chain' (GAdj n adj) l ∧ (∀ v, v < n → v ∈ l)
+
+def GHasHamPath (n : Nat) (adj : Nat → Nat → Bool) : Prop := ∃ l, GIsHamPath n adj l
+
+/-- Justification of the ℕ rendering of the ceiling.  `(a + 11 - 1) / 11` with truncating
+division is exactly `⌈a/11⌉`: it is a `k` with `a ≤ 11k`, and it is the least such `k`.
+The remaining step, `⌈1 + a/11⌉ = 1 + ⌈a/11⌉` because 1 is an integer, is elementary and is
+NOT formalised here — it is a hand-verified translation step and therefore part of the
+trusted *statement*, not part of the proof (see log.md, gap M6). -/
+theorem ceilDiv11 (a : Nat) :
+    a ≤ ((a + 11 - 1) / 11) * 11 ∧ ∀ k, a ≤ k * 11 → (a + 11 - 1) / 11 ≤ k :=
+  ⟨by omega, fun _ h => by omega⟩
+
+/-- **WOWII Conjecture 200.**  For every finite simple connected graph, if the largest
+order of an induced subgraph that is a tree equals `⌈1 + l_avg⌉` — where `l_avg` is the
+average over the `n` vertices of `l(v)`, the independence number of the subgraph induced on
+the open neighbourhood `N(v)` — then the graph has a Hamiltonian path.
+
+`L` is the function of l-values and `t` the tree number; the ceiling is rendered over ℕ as
+`1 + (Σ_{v<n} L v + n - 1) / n` (see `ceilDiv11`). -/
+def Conjecture200 : Prop :=
+  ∀ (n : Nat) (adj : Nat → Nat → Bool) (L : Nat → Nat) (t : Nat),
+    0 < n →
+    WellFormed n adj →
+    GConnected n adj →
+    (∀ v, v < n → GLVal n adj v (L v)) →
+    GTreeNumber n adj t →
+    t = 1 + (sumBelow L n + n - 1) / n →
+    GHasHamPath n adj
+
+/-! ### Transferring the results proved for G into the general vocabulary -/
+
+theorem reach_to_G {u v : Nat} (h : Reach u v) : GReach 11 adjB u v := by
+  induction h with
+  | refl u => exact .refl u
+  | step hadj _ ih => exact .step hadj ih
+
+theorem reachIn_to_G {m u v : Nat} (h : ReachIn m u v) : GReachIn 11 adjB m u v := by
+  induction h with
+  | refl h1 h2 => exact .refl h1 h2
+  | step h1 h2 hadj _ ih => exact .step h1 h2 hadj ih
+
+theorem reachIn_of_G {m u v : Nat} (h : GReachIn 11 adjB m u v) : ReachIn m u v := by
+  induction h with
+  | refl h1 h2 => exact .refl h1 h2
+  | step h1 h2 hadj _ ih => exact .step h1 h2 hadj ih
+
+theorem two_pow_eleven : (2 : Nat) ^ 11 = 2048 := rfl
+
+/-- G is a well-formed finite simple graph on 11 vertices. -/
+theorem G_wellFormed : WellFormed 11 adjB := by
+  refine ⟨fun u v h => adjB_lt h, ?_, ?_⟩
+  · intro u v
+    cases Nat.lt_or_ge u 11 with
+    | inr h =>
+      have h1 : adjB u v = false := by simp [adjB, Nat.not_lt.2 h]
+      have h2 : adjB v u = false := by simp [adjB, Nat.not_lt.2 h]
+      rw [h1, h2]
+    | inl hu =>
+      cases Nat.lt_or_ge v 11 with
+      | inr h =>
+        have h1 : adjB u v = false := by simp [adjB, Nat.not_lt.2 h]
+        have h2 : adjB v u = false := by simp [adjB, Nat.not_lt.2 h]
+        rw [h1, h2]
+      | inl hv =>
+        have k1 := (allBelow_iff _ _).1 ((allBelow_iff _ _).1 adj_symm_B u hu) v hv
+        have k2 := (allBelow_iff _ _).1 ((allBelow_iff _ _).1 adj_symm_B v hv) u hu
+        cases hb : adjB u v <;> cases hb2 : adjB v u <;> simp_all
+  · intro u
+    cases Nat.lt_or_ge u 11 with
+    | inr h => simp [adjB, Nat.not_lt.2 h]
+    | inl hu =>
+      have := (allBelow_iff _ _).1 adj_irrefl_B u hu
+      simpa using this
+
+theorem G_connected_general : GConnected 11 adjB :=
+  fun u hu v hv => reach_to_G (G_connected u hu v hv)
+
+theorem G_treeNumber_general : GTreeNumber 11 adjB 4 := by
+  obtain ⟨⟨m, hm, ht, hc⟩, hup⟩ := G_treeNumber
+  refine ⟨⟨m, by rw [two_pow_eleven]; exact hm,
+    ⟨ht.1, fun u v hu hv => reachIn_to_G (ht.2.1 u v hu hv), ht.2.2⟩, hc⟩, ?_⟩
+  intro m' hm' htree
+  rw [two_pow_eleven] at hm'
+  exact hup m' hm' ⟨htree.1, fun u v hu hv => reachIn_of_G (htree.2.1 u v hu hv), htree.2.2⟩
+
+theorem l_all_general : ∀ v, v < 11 → GLVal 11 adjB v (lOf v) := l_all
+
+theorem no_ham_path_general : ¬ GHasHamPath 11 adjB := no_ham_path
+
+/-- **WOWII Conjecture 200 is false.**  The 11-vertex graph G above is a counterexample:
+it is a well-formed, connected, finite simple graph whose tree number equals
+`⌈1 + l_avg⌉ = 4`, and which has no Hamiltonian path. -/
+theorem conjecture200_is_false : ¬ Conjecture200 := fun hconj =>
+  no_ham_path_general
+    (hconj 11 adjB lOf 4 (by omega) G_wellFormed G_connected_general
+      l_all_general G_treeNumber_general (by decide))
+
+#print axioms conjecture200_is_false

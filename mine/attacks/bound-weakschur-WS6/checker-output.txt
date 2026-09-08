@@ -1,0 +1,18 @@
+=== bash scripts/check-freeze.sh ===
+VERIFIER INTACT (40 files)
+
+=== python3 mine/verify/checkers/check_schur_lower.py mine/attacks/bound-weakschur-WS6/witnesses/ws1_n2_demo.json ===
+(demonstration only: this is a WEAK-Schur witness for WS(1)=2; the frozen checker
+ implements STANDARD Schur (x=y allowed) and is expected to REJECT it)
+{
+  "r": 1,
+  "n": 2,
+  "monochromatic_sum_found": {
+    "x": 1,
+    "y": 1,
+    "z": 2,
+    "colour": 0
+  }
+}
+REJECT: monochromatic 1 + 1 = 2 in colour 0
+exit=1
